@@ -14,3 +14,7 @@ Test the server with the MCP Inspector:
 ```cmd
 mcp dev server.py
 ```
+or 
+```cmd
+uv run mcp dev server.py
+```
