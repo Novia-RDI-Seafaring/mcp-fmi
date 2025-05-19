@@ -9,15 +9,19 @@ load_dotenv()
 
 # context manager for loading models on startup
 @asynccontextmanager
-async def lifespan(server: FastMCP) -> AsyncIterator[None]:
+async def app_lifespan(server: FastMCP) -> AsyncIterator[None]:
+    #on startup
     print("Startup...")
-    yield
-    print("Shutdown...")
+    try:
+        yield 
+    finally:
+        # on shutdown
+        print("Shutdown...")
 
 # Create an MCP server
 mcp = FastMCP(
     "MCP-FMU Server",
-    lifespan=lifespan,
+    lifespan=app_lifespan,
     host=os.getenv("HOST") or "0.0.0.0",
     port=os.getenv("PORT") or 8050
     )
