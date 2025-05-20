@@ -37,6 +37,10 @@ class FMUCollection(BaseModel):
     """Returns a collection of all available FMU models and their information."""
     fmus: Dict[str, FMUInfo]
 
+class FMUOutputs(BaseModel):
+    timestamps: List[float]
+    outputs:    Dict[str, List[float]]
+
 ####################### FUNCTIONS ################################
 
 def get_fmu_paths(fmu_dir: Path) -> FMUPaths:
@@ -48,7 +52,7 @@ def get_additional_information(path: Path) -> str:
     md_path = path.with_suffix('.md')
     return md_path.read_text("utf-8") if md_path.is_file() else ""
 
-def get_fmu_info(fmu_path: str) -> FMUInfo:
+def get_fmu_information(fmu_path: str) -> FMUInfo:
     """
     Reads the FMU at fmu_path and returns an FMUInfo object
     containing variables, metadata, and simulation settings.
@@ -97,3 +101,38 @@ def get_fmu_info(fmu_path: str) -> FMUInfo:
         metadata=metadata,
         simulation=simulation
     )
+
+def get_all_fmu_information(FMU_DIR) -> FMUCollection:
+    """Lists all FMU models with full metadata, variables, and simulation defaults."""
+    fmu_paths_list = get_fmu_paths(FMU_DIR)          # returns FMUPaths
+    infos: Dict[str,str] = {}
+
+    for pth in fmu_paths_list.fmu_paths:
+        full_path = FMU_DIR / Path(pth).name
+        info = get_fmu_information(str(full_path))
+        infos[info.name] = info
+
+    return FMUCollection(fmus=infos)
+
+
+def simulate_fmus(FMU_DIR: Path, fmu_name: str) -> FMUOutputs:
+    "Simulates an FMU model"
+    # simulate
+    fmu_path = FMU_DIR / f"{fmu_name}.fmu"
+    if not fmu_path.is_file():
+        raise FileNotFoundError(f"FMU not found: {fmu_path}")
+    
+    #simulate fmu
+    result = simulate_fmu(str(fmu_path))
+
+    # get timestamps
+    time_key = "time" if "time" in result.dtype.names else "timestamp"
+    timestamps = result[time_key].tolist()
+
+    outputs = {
+        name: result[name].tolist()
+        for name in result.dtype.names
+        if name != time_key
+    }
+
+    return FMUOutputs(timestamps=timestamps, outputs=outputs)
