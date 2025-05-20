@@ -20,7 +20,7 @@ class FMUMetadata(BaseModel):
     generation_tool: str
     generation_date_and_time: str
 
-class FMUSimulation(BaseModel):
+class FMUSimulationOptions(BaseModel):
     start_time: float
     stop_time: float
     tolerance: float
@@ -31,7 +31,7 @@ class FMUInfo(BaseModel):
     description: str
     variables: FMUVariables
     metadata: FMUMetadata
-    simulation: FMUSimulation
+    simulation: FMUSimulationOptions
 
 class FMUCollection(BaseModel):
     """Returns a collection of all available FMU models and their information."""
@@ -51,6 +51,14 @@ def get_additional_information(path: Path) -> str:
     """Gets additional information of an FMU model at fmu_path."""
     md_path = path.with_suffix('.md')
     return md_path.read_text("utf-8") if md_path.is_file() else ""
+
+def get_dafault_simulation_options(md):
+    default_exp = md.defaultExperiment
+    return FMUSimulationOptions(
+        start_time=default_exp.startTime if default_exp.startTime is not None else 0.0,
+        stop_time=default_exp.stopTime if default_exp.stopTime is not None else 0.0,
+        tolerance=default_exp.tolerance if default_exp.tolerance is not None else 1E-4
+    )
 
 def get_fmu_information(fmu_path: str) -> FMUInfo:
     """
@@ -82,13 +90,7 @@ def get_fmu_information(fmu_path: str) -> FMUInfo:
     )
 
     # Simulation defaults with safe fallback for None
-    default_exp = md.defaultExperiment
-    simulation = FMUSimulation(
-        start_time=default_exp.startTime if default_exp.startTime is not None else 0.0,
-        stop_time=default_exp.stopTime if default_exp.stopTime is not None else 0.0,
-        tolerance=default_exp.tolerance if default_exp.tolerance is not None else 0.0
-    )
-
+    simulation_description = get_dafault_simulation_options(md)
     base_description = md.description or '' # get base description from FMU model
     additional_description = get_additional_information(path) # get additional information from markdown
     full_description = f"{base_description}\n\n{additional_description}" if additional_description else base_description
@@ -99,7 +101,7 @@ def get_fmu_information(fmu_path: str) -> FMUInfo:
         description=full_description,
         variables=variables,
         metadata=metadata,
-        simulation=simulation
+        simulation=simulation_description
     )
 
 def get_all_fmu_information(FMU_DIR) -> FMUCollection:
@@ -114,16 +116,22 @@ def get_all_fmu_information(FMU_DIR) -> FMUCollection:
 
     return FMUCollection(fmus=infos)
 
-
-def simulate_fmus(FMU_DIR: Path, fmu_name: str) -> FMUOutputs:
+def simulate_fmus(FMU_DIR: Path,fmu_name: str,start_time: float,stop_time: float,output_interval: float,tolerance: float) -> FMUOutputs:
+    
     "Simulates an FMU model"
     # simulate
     fmu_path = FMU_DIR / f"{fmu_name}.fmu"
     if not fmu_path.is_file():
         raise FileNotFoundError(f"FMU not found: {fmu_path}")
-    
+        
     #simulate fmu
-    result = simulate_fmu(str(fmu_path))
+    result = simulate_fmu(
+        filename=str(fmu_path),
+        start_time=start_time,
+        stop_time=stop_time,
+        output_interval=output_interval,
+        relative_tolerance=tolerance,
+        )
 
     # get timestamps
     time_key = "time" if "time" in result.dtype.names else "timestamp"

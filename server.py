@@ -60,13 +60,19 @@ def fmu_information() -> FMUCollection:
     return get_all_fmu_information(FMU_DIR)
 
 @mcp.tool()
-def fmu_simulation(fmu_name: str) -> FMUOutputs:
+def fmu_simulation(
+    fmu_name: str = "BouncongBall",
+    start_time: float = 0.0,
+    stop_time: float = 1.0,
+    output_interval: float = 0.1,
+    tolerance: float = 1E-4
+    ) -> FMUOutputs:
     """This tool simulates an FMU model.
     
     Args:
     fmu_name (str): The name of the FMU model to be simulated. 
     """
-    return simulate_fmus(FMU_DIR, fmu_name)
+    return simulate_fmus(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance)
 
 if __name__ == "__main__":
     mcp.run()
