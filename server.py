@@ -12,15 +12,14 @@ from src.fmu_utils import get_fmu_paths, get_fmu_info, FMUCollection
 
 load_dotenv()
 
-STATIC_DIR = Path(__file__).parent / "static"
-FMU_DIR    = STATIC_DIR / "fmus"
+BASE_DIR   = Path(__file__).parent
+FMU_DIR    = (BASE_DIR / "static" / "fmus").resolve()
 
 #### pydantic classes ####
 class FMUList(BaseModel):
     """Absolute paths to all .fmu models that can be simulated."""
     fmu_paths: List[str]
     
-
 class FMUOutputs(BaseModel):
     timestamps: List[float]
     outputs:    Dict[str, List[float]]
@@ -60,11 +59,10 @@ mcp = FastMCP(
 def ping() -> str:
     return "pong"
 
-@mcp.resource("fmus://infos")
-def get_all_fmu_info() -> FMUCollection:
+@mcp.tool()
+def get_informaiton_of_all_fmus() -> FMUCollection:
     """Lists all FMU models with full metadata, variables, and simulation defaults."""
-    fmu_paths_list = get_fmu_paths()          # returns FMUPaths
-    # 2. Build a dict of FMUInfo objects keyed by model name
+    fmu_paths_list = get_fmu_paths(FMU_DIR)          # returns FMUPaths
     infos: Dict[str,str] = {}
 
     for pth in fmu_paths_list.fmu_paths:

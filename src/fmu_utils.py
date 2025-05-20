@@ -14,7 +14,6 @@ class FMUVariables(BaseModel):
 
 class FMUMetadata(BaseModel):
     fmi_version: str
-    model_name: str
     author: str
     version: str
     license: str
@@ -38,7 +37,11 @@ class FMUCollection(BaseModel):
     """Returns a collection of all available FMU models and their information."""
     fmus: Dict[str, FMUInfo]
 
-pth = "fmus/BouncingBall.fmu"
+####################### FUNCTIONS ################################
+
+def get_fmu_paths(fmu_dir: Path) -> FMUPaths:
+    paths = [f.as_posix() for f in fmu_dir.glob("*.fmu") if f.is_file()]
+    return FMUPaths(fmu_paths=paths)
 
 def get_additional_information(path: Path) -> str:
     """Gets additional information of an FMU model at fmu_path."""
@@ -94,16 +97,3 @@ def get_fmu_info(fmu_path: str) -> FMUInfo:
         metadata=metadata,
         simulation=simulation
     )
-
-def get_fmu_paths() -> FMUPaths:
-    """Lists the paths all available FMU models that can be simulated."""
-    fmu_dir = Path(os.getenv("FMU_DIR", "fmus"))
-    if not fmu_dir.is_dir():
-        return FMUPaths(fmu_paths=[])
-
-    paths = [
-        f.as_posix()
-        for f in fmu_dir.glob("*.fmu")
-        if f.is_file()
-    ]
-    return FMUPaths(fmu_paths=paths)
