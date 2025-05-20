@@ -5,7 +5,6 @@ from pathlib import Path
 from fmpy import simulate_fmu, plot_result, read_model_description
 
 class FMUPaths(BaseModel):
-    """Absolute paths to all .fmu models that can be simulated."""
     fmu_paths: List[str]
 
 class FMUVariables(BaseModel):
@@ -36,10 +35,15 @@ class FMUInfo(BaseModel):
     simulation: FMUSimulation
 
 class FMUCollection(BaseModel):
-    """A mapping from FMU name to its full introspection info."""
+    """Returns a collection of all available FMU models and their information."""
     fmus: Dict[str, FMUInfo]
 
 pth = "fmus/BouncingBall.fmu"
+
+def get_additional_information(path: Path) -> str:
+    """Gets additional information of an FMU model at fmu_path."""
+    md_path = path.with_suffix('.md')
+    return md_path.read_text("utf-8") if md_path.is_file() else ""
 
 def get_fmu_info(fmu_path: str) -> FMUInfo:
     """
@@ -60,17 +64,9 @@ def get_fmu_info(fmu_path: str) -> FMUInfo:
         parameters=parameters
     )
 
-    # Read additional description from FMU_NAME.md if exists
-    additional_md_path = path.with_suffix('.md')
-    if additional_md_path.is_file():
-        additional_description = additional_md_path.read_text(encoding='utf-8')
-    else:
-        additional_description = ''
-
     # Metadata with safe fallbacks
     metadata = FMUMetadata(
         fmi_version=md.fmiVersion or '',
-        model_name=md.modelName or '',
         author=md.author or '',
         version=md.version or '',
         license=md.license or '',
@@ -86,20 +82,21 @@ def get_fmu_info(fmu_path: str) -> FMUInfo:
         tolerance=default_exp.tolerance if default_exp.tolerance is not None else 0.0
     )
 
-    base_description = md.description or ''
+    base_description = md.description or '' # get base description from FMU model
+    additional_description = get_additional_information(path) # get additional information from markdown
     full_description = f"{base_description}\n\n{additional_description}" if additional_description else base_description
 
     return FMUInfo(
         name=md.modelName or '',
         relative_path=str(path),
-        description=full_description or '',
-        variables=variables,  # ensure correct keyword
+        description=full_description,
+        variables=variables,
         metadata=metadata,
         simulation=simulation
     )
 
 def get_fmu_paths() -> FMUPaths:
-    """This resource lists all available FMU models that can be simulated."""
+    """Lists the paths all available FMU models that can be simulated."""
     fmu_dir = Path(os.getenv("FMU_DIR", "fmus"))
     if not fmu_dir.is_dir():
         return FMUPaths(fmu_paths=[])

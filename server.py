@@ -12,6 +12,9 @@ from src.fmu_utils import get_fmu_paths, get_fmu_info, FMUCollection
 
 load_dotenv()
 
+STATIC_DIR = Path(__file__).parent / "static"
+FMU_DIR    = STATIC_DIR / "fmus"
+
 #### pydantic classes ####
 class FMUList(BaseModel):
     """Absolute paths to all .fmu models that can be simulated."""
@@ -62,11 +65,13 @@ def get_all_fmu_info() -> FMUCollection:
     """Lists all FMU models with full metadata, variables, and simulation defaults."""
     fmu_paths_list = get_fmu_paths()          # returns FMUPaths
     # 2. Build a dict of FMUInfo objects keyed by model name
-    infos = {}
+    infos: Dict[str,str] = {}
+
     for pth in fmu_paths_list.fmu_paths:
-        info = get_fmu_info(pth)        # your function that reads + wraps the FMU
+        full_path = FMU_DIR / Path(pth).name
+        info = get_fmu_info(str(full_path))
         infos[info.name] = info
-    # 3. Return as a Pydantic model
+
     return FMUCollection(fmus=infos)
 
 @mcp.tool()
@@ -77,8 +82,12 @@ def simulate(fmu_name: str) -> FMUOutputs:
     fmu_name (str): The name of the FMU model to be simulated. 
     """
     # simulate
-    pth = f"fmus/{fmu_name}.fmu"
-    result = simulate_fmu(pth)
+    fmu_path = FMU_DIR / f"{fmu_name}.fmu"
+    if not fmu_path.is_file():
+        raise FileNotFoundError(f"FMU not found: {fmu_path}")
+    
+    #simulate fmu
+    result = simulate_fmu(str(fmu_path))
 
     # get timestamps
     time_key = "time" if "time" in result.dtype.names else "timestamp"
