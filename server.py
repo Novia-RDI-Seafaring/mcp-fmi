@@ -8,17 +8,25 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 from fmpy import simulate_fmu, plot_result
+from src.fmu_utils import get_fmu_paths, get_fmu_info, FMUCollection
 
 load_dotenv()
 
 #### pydantic classes ####
 class FMUList(BaseModel):
-    fmu_paths: List[str]
     """Absolute paths to all .fmu models that can be simulated."""
+    fmu_paths: List[str]
+    
 
 class FMUOutputs(BaseModel):
     timestamps: List[float]
     outputs:    Dict[str, List[float]]
+
+class FMIInfo(BaseModel):
+    name: str
+    relative_path: str
+    inputs: Dict[str, str]
+    outputs: Dict[str, str]
 
 ##### context manager for loading models on startup ####
 @asynccontextmanager
@@ -49,29 +57,28 @@ mcp = FastMCP(
 def ping() -> str:
     return "pong"
 
-@mcp.resource("fmus://list")
-def get_fmu_paths() -> FMUList:
-    """This resource lists all available FMU models that can be simulated."""
-    fmu_dir = Path(os.getenv("FMU_DIR", "fmus"))
-    if not fmu_dir.is_dir():
-        return FMUList(fmu_paths=[])
-
-    paths = [
-        f.as_posix()
-        for f in fmu_dir.glob("*.fmu")
-        if f.is_file()
-    ]
-    return FMUList(fmu_paths=paths)
+@mcp.resource("fmus://infos")
+def get_all_fmu_info() -> FMUCollection:
+    """Lists all FMU models with full metadata, variables, and simulation defaults."""
+    fmu_paths_list = get_fmu_paths()          # returns FMUPaths
+    # 2. Build a dict of FMUInfo objects keyed by model name
+    infos = {}
+    for pth in fmu_paths_list.fmu_paths:
+        info = get_fmu_info(pth)        # your function that reads + wraps the FMU
+        infos[info.name] = info
+    # 3. Return as a Pydantic model
+    return FMUCollection(fmus=infos)
 
 @mcp.tool()
-def simulate(fmu_path: str) -> FMUOutputs:
+def simulate(fmu_name: str) -> FMUOutputs:
     """This tool simulates an FMU model.
     
     Args:
-    fmu_path: str
+    fmu_name (str): The name of the FMU model to be simulated. 
     """
     # simulate
-    result = simulate_fmu(fmu_path)
+    pth = f"fmus/{fmu_name}.fmu"
+    result = simulate_fmu(pth)
 
     # get timestamps
     time_key = "time" if "time" in result.dtype.names else "timestamp"

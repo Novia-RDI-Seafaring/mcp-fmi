@@ -1,0 +1,5 @@
+from src.fmu_utils import get_fmu_info
+
+info = get_fmu_info("fmus/BouncingBall.fmu")
+print(info.model_dump_json(indent=2))
+
