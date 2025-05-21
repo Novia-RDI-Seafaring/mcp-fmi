@@ -9,7 +9,8 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 from fmpy import simulate_fmu, plot_result
 
-from mcp_fmu.simulation import simulate_fmus, get_all_fmu_information
+from mcp_fmu.inputs import step_input
+from mcp_fmu.simulation import get_all_fmu_information, simulate, simulate_with_inputs
 from mcp_fmu.schema import FMUCollection, DataModel
 
 load_dotenv()
@@ -35,9 +36,11 @@ mcp = FastMCP(
     host=os.getenv("HOST") or "0.0.0.0",
     port=os.getenv("PORT") or 8050,
     dependencies=[
+        "mcp-fmu",
         "pydantic",
         "fmpy",
-        "python-dotenv"
+        "python-dotenv",
+        "numpy"
     ]
     )
 
@@ -63,7 +66,33 @@ def fmu_simulation(
     Args:
     fmu_name (str): The name of the FMU model to be simulated. 
     """
-    return simulate_fmus(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance)
+    return simulate(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance)
+
+@mcp.tool()
+def fmu_simulation_with_inputs(
+    inputs: DataModel,
+    fmu_name: str = "LOC",
+    start_time: float = 0.0,
+    stop_time: float = 300.0,
+    output_interval: float = 5,
+    tolerance: float = 1E-4,
+    ) -> DataModel:
+    """This tool simulates an FMU model with inputs.
+    """
+    return simulate_with_inputs(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance, inputs)
+
+@mcp.tool()
+def create_step_inputs(
+    fmu_name: str = "LOC",
+    start_time: float = 0.0,
+    stop_time: float = 300.0,
+    dt: float = 5,
+    input_names: List[str] = ["INPUT_temperature_cold_circuit_inlet", "INPUT_massflow_cold_circuit", "SETPOINT_temperature_lube_oil", "INPUT_engine_load_0_1"],
+    step_times: List[float] = [0.0, 0.0, 150, 0.0],
+    start_values: List[float] = [50.0, 10.0, 80.0, 1.0],
+    stop_values: List[float] = [50.0, 10.0, 80.0, 1.0]
+    ) -> DataModel:
+    return step_input(FMU_DIR,fmu_name,start_time,stop_time,dt,input_names,step_times,start_values,stop_values)
 
 if __name__ == "__main__":
     mcp.run()

@@ -1,19 +1,9 @@
 from typing import List, Dict
 from pydantic import BaseModel
 
-#class FMUPaths(BaseModel):
-#    """Absolute paths to all .fmu models that can be simulated."""
-#    fmu_paths: List[str]
-    
-#class FMUInfo(BaseModel):
-#    name: str
-#    relative_path: str
-#    inputs: Dict[str, str]
-#    outputs: Dict[str, str]
-
 class DataModel(BaseModel):
     timestamps: List[float]
-    outputs:    Dict[str, List[float]]   # contains every signal: inputs + outputs
+    signals:    Dict[str, List[float]]   # contains every signal: inputs + outputs
 
 class FMUPaths(BaseModel):
     fmu_paths: List[str]
