@@ -8,11 +8,11 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 from fmpy import simulate_fmu, plot_result
-from src.fmu_utils import simulate_fmus, get_all_fmu_information, FMUCollection, FMUOutputs
+from mcp_fmu.fmu_utils import simulate_fmus, get_all_fmu_information, FMUCollection, FMUOutputs
 
 load_dotenv()
 
-BASE_DIR   = Path(__file__).parent
+BASE_DIR   = Path(__file__).parents[2]
 FMU_DIR    = (BASE_DIR / "static" / "fmus").resolve()
 
 #### pydantic classes ####
