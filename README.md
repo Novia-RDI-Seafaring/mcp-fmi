@@ -13,11 +13,11 @@ uv run mcp
 
 Test the server with the MCP Inspector:
 ```cmd
-mcp dev server.py
+ mcp dev src/mcp_fmu/server.py   
 ```
 or 
 ```cmd
-uv run mcp dev server.py
+uv run mcp dev src/mcp_fmu/server.py
 ```
 
 ## Claude Desktop Integration
