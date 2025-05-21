@@ -8,23 +8,14 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 from fmpy import simulate_fmu, plot_result
-from mcp_fmu.fmu_utils import simulate_fmus, get_all_fmu_information, FMUCollection, FMUOutputs
+
+from mcp_fmu.simulation import simulate_fmus, get_all_fmu_information
+from mcp_fmu.schema import FMUCollection, DataModel
 
 load_dotenv()
 
 BASE_DIR   = Path(__file__).parents[2]
 FMU_DIR    = (BASE_DIR / "static" / "fmus").resolve()
-
-#### pydantic classes ####
-class FMUList(BaseModel):
-    """Absolute paths to all .fmu models that can be simulated."""
-    fmu_paths: List[str]
-    
-class FMIInfo(BaseModel):
-    name: str
-    relative_path: str
-    inputs: Dict[str, str]
-    outputs: Dict[str, str]
 
 ##### context manager for loading models on startup ####
 @asynccontextmanager
@@ -61,12 +52,12 @@ def fmu_information() -> FMUCollection:
 
 @mcp.tool()
 def fmu_simulation(
-    fmu_name: str = "BouncongBall",
+    fmu_name: str = "BouncingBall",
     start_time: float = 0.0,
     stop_time: float = 1.0,
     output_interval: float = 0.1,
     tolerance: float = 1E-4
-    ) -> FMUOutputs:
+    ) -> DataModel:
     """This tool simulates an FMU model.
     
     Args:

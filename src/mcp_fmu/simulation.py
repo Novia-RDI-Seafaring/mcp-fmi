@@ -4,44 +4,7 @@ from typing import List, Dict
 from pathlib import Path
 from fmpy import simulate_fmu, plot_result, read_model_description
 
-class FMUPaths(BaseModel):
-    fmu_paths: List[str]
-
-class FMUVariables(BaseModel):
-    inputs: Dict[str, str]
-    outputs: Dict[str, str]
-    parameters: Dict[str, str]
-
-class FMUMetadata(BaseModel):
-    fmi_version: str
-    author: str
-    version: str
-    license: str
-    generation_tool: str
-    generation_date_and_time: str
-
-class FMUSimulationOptions(BaseModel):
-    start_time: float
-    stop_time: float
-    tolerance: float
-
-class FMUInfo(BaseModel):
-    name: str
-    relative_path: str
-    description: str
-    variables: FMUVariables
-    metadata: FMUMetadata
-    simulation: FMUSimulationOptions
-
-class FMUCollection(BaseModel):
-    """Returns a collection of all available FMU models and their information."""
-    fmus: Dict[str, FMUInfo]
-
-class FMUOutputs(BaseModel):
-    timestamps: List[float]
-    outputs:    Dict[str, List[float]]
-
-####################### FUNCTIONS ################################
+from mcp_fmu.schema import *
 
 def get_fmu_paths(fmu_dir: Path) -> FMUPaths:
     paths = [f.as_posix() for f in fmu_dir.glob("*.fmu") if f.is_file()]
@@ -116,7 +79,7 @@ def get_all_fmu_information(FMU_DIR) -> FMUCollection:
 
     return FMUCollection(fmus=infos)
 
-def simulate_fmus(FMU_DIR: Path,fmu_name: str,start_time: float,stop_time: float,output_interval: float,tolerance: float) -> FMUOutputs:
+def simulate_fmus(FMU_DIR: Path,fmu_name: str,start_time: float,stop_time: float,output_interval: float,tolerance: float) -> DataModel:
     
     "Simulates an FMU model"
     # simulate
@@ -143,4 +106,4 @@ def simulate_fmus(FMU_DIR: Path,fmu_name: str,start_time: float,stop_time: float
         if name != time_key
     }
 
-    return FMUOutputs(timestamps=timestamps, outputs=outputs)
+    return DataModel(timestamps=timestamps, outputs=outputs)
