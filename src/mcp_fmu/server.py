@@ -12,6 +12,9 @@ from fmpy import simulate_fmu, plot_result
 from mcp_fmu.inputs import step_input
 from mcp_fmu.simulation import get_all_fmu_information, simulate, simulate_with_inputs
 from mcp_fmu.schema import FMUCollection, DataModel
+from mcp_fmu.artifacts import build_dash_layout
+
+from dash import dcc, html
 
 load_dotenv()
 
@@ -92,6 +95,14 @@ def create_step_inputs(
     stop_values: List[float] = [50.0, 10.0, 80.0, 1.0]
     ) -> DataModel:
     return step_input(FMU_DIR,fmu_name,start_time,stop_time,dt,input_names,step_times,start_values,stop_values)
+
+@mcp.tool()
+def results_artifact(
+    result,
+    input_vars,
+    output_vars
+    ) -> html.Div:
+    return build_dash_layout(result, input_vars, output_vars)
 
 
 def main():
