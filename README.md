@@ -1,5 +1,31 @@
 # mcp-fmu
 
+## Prerequisites
+
+- Python 3.13 or higher
+- [uv](https://docs.astral.sh/uv/pip/packages/) package manager
+- Claude Desktop (for desktop integration)
+
+## Installation
+
+1. Create and activate a virtual environment:
+```bash
+# Create venv with uv
+uv venv
+
+# Activate on macOS/Linux
+source .venv/bin/activate
+
+# Activate on Windows
+.venv\Scripts\activate
+```
+
+2. Install dependencies:
+```bash
+# Make sure you're in the project root directory
+uv pip install -e .
+```
+
 ## Run the MCP-FMU server
 Then add MCP to your project dependencies:
 ```cmd
@@ -12,12 +38,8 @@ uv run mcp
 ```
 
 Test the server with the MCP Inspector:
-```cmd
- mcp dev src/mcp_fmu/server.py   
-```
-or 
-```cmd
-uv run mcp dev src/mcp_fmu/server.py
+```bash
+uv run --with mcp --with mcp-fmu --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmu/server.py
 ```
 
 ## Claude Desktop Integration

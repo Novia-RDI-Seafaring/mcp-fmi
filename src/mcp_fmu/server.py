@@ -94,5 +94,9 @@ def create_step_inputs(
     ) -> DataModel:
     return step_input(FMU_DIR,fmu_name,start_time,stop_time,dt,input_names,step_times,start_values,stop_values)
 
-if __name__ == "__main__":
+
+def main():
     mcp.run()
+
+if __name__ == "__main__":
+    main()
