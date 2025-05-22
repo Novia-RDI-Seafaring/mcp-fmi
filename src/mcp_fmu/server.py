@@ -15,8 +15,7 @@ from mcp_fmu.schema import FMUCollection, DataModel
 
 load_dotenv()
 
-BASE_DIR   = Path(__file__).parents[2]
-FMU_DIR    = (BASE_DIR / "static" / "fmus").resolve()
+FMU_DIR = os.getenv("FMU_DIR", (Path(__file__).parents[2] / "static" / "fmus").resolve())
 
 ##### context manager for loading models on startup ####
 @asynccontextmanager
