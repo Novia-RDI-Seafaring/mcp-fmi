@@ -4,7 +4,6 @@ from typing import List, Dict
 from mcp_fmu.schema import DataModel
 import numpy as np
 
-
 def step_input(
     FMU_DIR: Path,
     fmu_name: str,
@@ -55,3 +54,56 @@ def convert_data(input_model: DataModel, input_vars: List[str]) -> np.ndarray:
         row = (time[i],) + tuple(input_model.signals[name][i] for name in input_vars)
         rows.append(row)
     return np.array(rows, dtype=dtype)
+
+###
+
+def get_input_names(md) -> List[str]:   
+    return [v.name for v in md.modelVariables if v.causality == 'input']
+
+def generate_signal(
+        input_name: str,
+        timestamps: List[float],
+        values: List[float]
+) -> DataModel:
+    """
+    Create a DataModel with a single input signal populated with values.
+    """
+    return DataModel(
+        timestamps=timestamps,
+        signals={input_name: values}
+    )
+
+def merge_signals(signals: List[DataModel]) -> DataModel:
+    """
+    Merge multiple DataModel instances into a unified model with shared timestamps.
+    Assumes piecewise-constant behavior: values hold until the next change.
+    """
+    #Build global sorted timestamp list
+    new_timestamps = sorted(set(t for model in signals for t in model.timestamps))
+
+    # Prepare output signals
+    merged_signals = {}
+
+    for s in signals:
+        name = list(s.signals.keys())[0]  # only one signal per model
+        ts = s.timestamps
+        vs = s.signals[name]
+
+        # Map the known values to timestamps
+        signal_map = dict(zip(ts, vs))
+
+        # Fill in values across the global timestamp list using last known value
+        filled_values = []
+        last_value = 0.0  # or None, or a configurable default
+
+        for t in new_timestamps:
+            if t in signal_map:
+                last_value = signal_map[t]
+            filled_values.append(last_value)
+
+        merged_signals[name] = filled_values
+
+    return DataModel(
+        timestamps=new_timestamps,
+        signals=merged_signals
+    )

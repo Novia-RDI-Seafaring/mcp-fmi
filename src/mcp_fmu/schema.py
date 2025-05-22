@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class DataModel(BaseModel):
     timestamps: List[float]
-    signals:    Dict[str, List[float]]   # contains every signal: inputs + outputs
+    signals:    Dict[str, List[float]] 
 
 class FMUPaths(BaseModel):
     fmu_paths: List[str]
