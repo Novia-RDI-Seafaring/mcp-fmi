@@ -12,7 +12,7 @@ from fmpy import simulate_fmu, plot_result
 from mcp_fmu.inputs import create_signal, merge_signals
 from mcp_fmu.simulation import get_all_fmu_information, simulate, simulate_with_inputs
 from mcp_fmu.schema import FMUCollection, DataModel
-from mcp_fmu.artifacts import build_dash_layout
+from mcp_fmu.artifacts import plot_in_browser
 
 from dash import dcc, html
 
@@ -96,14 +96,20 @@ def create_signal_tool(
 def merge_signals_tool(signals: List[DataModel]) -> DataModel:
     return merge_signals(signals)
 
-
 @mcp.tool()
-def results_artifact(
-    result,
-    input_vars,
-    output_vars
-    ) -> html.Div:
-    return build_dash_layout(result, input_vars, output_vars)
+def show_results_in_browser_tool(
+    inputs: DataModel,
+    outputs: DataModel
+):
+    """Visualizes the results in browser.
+    Args:
+    inputs (DataModel): input signals used in the simulation
+    outputs (DataModel): outputs from a simulation
+
+    Returns:
+    HttpURL to the visualizations 
+    """
+    return plot_in_browser(inputs, outputs)
 
 
 def main():

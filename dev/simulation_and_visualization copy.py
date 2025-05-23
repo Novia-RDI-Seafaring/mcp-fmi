@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Dict
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 from fmpy import simulate_fmu, read_model_description
 
@@ -137,11 +137,19 @@ def build_dash_layout(
         ])
     ])
 
-def plot_in_browser(inputs: DataModel, outputs: DataModel):
+
+class PlotHttpURL(BaseModel):
+    description: str
+    url: HttpUrl
+
+def plot_in_browser(inputs: DataModel, outputs: DataModel, port: int = 8051) -> PlotHttpURL:
     """Helper to spin up Dash in your browser"""
     app = dash.Dash(__name__)
     app.layout = build_dash_layout(inputs, outputs)
     app.run(debug=True, port=8051)
+    return PlotHttpURL(
+        description="URL to visualization of results.",
+        url=f"http://localhost:{port}")
 
 ################################
 if __name__ == "__main__":
@@ -174,5 +182,44 @@ if __name__ == "__main__":
         inputs          = inputs
     )
 
+    # test make figure
+    json_data = {
+        "timestamps": [
+            0,
+            300
+        ],
+        "signals": {
+            "INPUT_temperature_cold_circuit_inlet": [
+            50,
+            50
+            ],
+            "INPUT_massflow_cold_circuit": [
+            20,
+            20
+            ],
+            "SETPOINT_temperature_lube_oil": [
+            75,
+            75
+            ],
+            "INPUT_engine_load_0_1": [
+            1,
+            1
+            ]
+        }
+    }
+    signals = DataModel(**json_data)
+
+    fig = make_figure(
+        signals,
+        title="input signals"
+    )
+    #fig.write_html("fig.html", include_plotlyjs="cdn")
+
+    #html = fig.to_html(full_html=True, include_plotlyjs='cdn')
+    #print(html)
+
     # launch the interactive UI
     plot_in_browser(inputs=inputs, outputs=outputs)
+
+    
+

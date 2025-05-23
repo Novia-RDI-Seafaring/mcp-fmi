@@ -8,35 +8,35 @@ import dash
 from dash import dcc, html
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from mcp_fmu.schema import DataModel
+from mcp_fmu.schema import DataModel, PlotHttpURL
+
+import threading
 
 def make_figure(
-    timestamps: List[float],
-    signals: Dict[str, List[float]],
-    var_list: List[str],
+    signals: DataModel,
     title: str
 ) -> go.Figure:
-    vars_present = [v for v in var_list if v in signals]
+    """Standalone function to create a figure for given variables"""
     fig = make_subplots(
-        rows=len(vars_present) if vars_present else 1,
+        rows=len(signals.signals) if signals.signals else 1,
         cols=1,
         shared_xaxes=True,
-        subplot_titles=vars_present or [f"No {title.lower()} available."],
         vertical_spacing=0.05
     )
-    if vars_present:
-        for i, var in enumerate(vars_present, start=1):
+
+    if signals.signals:
+        for i, var in enumerate(signals.signals, start=1):
             fig.add_trace(
                 go.Scatter(
-                    x=timestamps,
-                    y=signals[var],
+                    x=signals.timestamps,
+                    y=signals.signals[var],
                     name=var,
                     mode='lines'
                 ),
                 row=i, col=1
             )
     fig.update_layout(
-        height=300 * (len(vars_present) or 1),
+        height=300 * (len(signals.signals) or 1),
         title_text=title,
         xaxis_title="Time (s)",
         yaxis_title="Value",
@@ -44,22 +44,42 @@ def make_figure(
     )
     return fig
 
-# — 5) Build a Dash layout from a DataModel —
 def build_dash_layout(
-    result: DataModel,
-    input_vars: List[str],
-    output_vars: List[str]
+    inputs: DataModel,
+    outputs: DataModel
 ) -> html.Div:
+    """Build a Dash layout from a DataModel"""
     return html.Div([
         dcc.Tabs([
             dcc.Tab(label="Inputs", children=[
-                dcc.Graph(figure=make_figure(result.timestamps, result.outputs, input_vars, "Inputs"))
+                dcc.Graph(figure=make_figure(inputs, "Inputs"))
             ]),
             dcc.Tab(label="Outputs", children=[
-                dcc.Graph(figure=make_figure(result.timestamps, result.outputs, output_vars, "Outputs"))
+                dcc.Graph(figure=make_figure(outputs, "Outputs"))
             ])
         ])
     ])
 
+def plot_in_browser(inputs: DataModel, outputs: DataModel, port: int = 8051) -> PlotHttpURL:
+    """Visualizes the results in browser
+    Args:
+    inputs (DataModel): input signals used in the simulation
+    outputs (DataModel): outputs from a simulation
 
+    Returns:
+    HttpURL to the visualizations 
+    """
+    app = dash.Dash(__name__)
+    app.layout = build_dash_layout(inputs, outputs)
+
+    def run_app():
+        app.run_server(debug=False, port=port, use_reloader=False)
+
+    thread = threading.Thread(target=run_app)
+    thread.daemon = True
+    thread.start()
+
+    return PlotHttpURL(
+        description="URL to visualization of results.",
+        url=f"http://localhost:{port}")
 

@@ -1,5 +1,5 @@
 from typing import List, Dict
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 class DataModel(BaseModel):
     timestamps: List[float]
@@ -37,3 +37,7 @@ class FMUInfo(BaseModel):
 class FMUCollection(BaseModel):
     """Returns a collection of all available FMU models and their information."""
     fmus: Dict[str, FMUInfo]
+
+class PlotHttpURL(BaseModel):
+    description: str
+    url: HttpUrl
