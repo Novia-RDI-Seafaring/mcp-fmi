@@ -45,7 +45,7 @@ uv run --with mcp --with mcp-fmu --with python-dotenv --with fmpy --with numpy -
 ## Claude Desktop Integration
 Install the MCP server in Claude Desktop by running
 ```cmd
-mcp install server.py
+mcp install src/mcp_fmu/server.py
 ```
 it should write the following into the `claude_desktop_config.json` file:
 ```json
@@ -55,19 +55,21 @@ it should write the following into the `claude_desktop_config.json` file:
       "command": "LOCAL_PATCH_TO_UV\\uv.EXE",
       "args": [
         "run",
-        "--with",
-        "fmpy",
-        "--with",
-        "mcp[cli]",
-        "--with",
-        "pydantic",
-        "--with",
-        "python-dotenv",
+        "--with", "dash",
+        "--with", "fmpy",
+        "--with", "mcp[cli]",
+        "--with", "pydantic",
+        "--with", "python-dotenv",
+        "--with", "numpy",
         "mcp",
         "run",
-        "LOCAL_PATH_TO_PROJECT\\server.py"
-      ]
+        "LOCAL_PATH_TO_PROJECT\\mcp-fmu\\src\\mcp_fmu\\server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "LOCAL_PATH_TO_PROJECT\\mcp-fmu\\src"
+      }
     }
   }
 }
-``` 
+
+```
