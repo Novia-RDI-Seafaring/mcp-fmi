@@ -9,23 +9,19 @@ import dash
 from dash import dcc, html
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from mcp_fmu.schema import DataModel
 
-# — 1) Unified DataModel for both inputs and outputs —
-class DataModel(BaseModel):
-    timestamps: List[float]
-    outputs:    Dict[str, List[float]]   # contains every signal: inputs + outputs
-
-# — 2) Build step inputs for a list of FMU inputs —
 def step_input(
     fmu_path: Path,
-    step_input_name: List[str],
     start_time: float,
     stop_time: float,
     dt: float,
+    step_input_name: List[str],
     step_time: List[float],
     start_value: List[float],
     stop_value: List[float]
 ) -> DataModel:
+    """Build step inputs for a list of FMU inputs"""
     md = read_model_description(str(fmu_path))
     input_vars = [v.name for v in md.modelVariables if v.causality == "input"]
 
@@ -50,79 +46,74 @@ def step_input(
         else:
             signals[var] = np.zeros_like(time).tolist()
 
-    return DataModel(timestamps=time.tolist(), outputs=signals)
+    return DataModel(timestamps=time.tolist(), signals=signals)
 
-# — 3) Turn DataModel (inputs only) into structured array for FMPy —
-def convert_data(input_model: DataModel, input_vars: List[str]) -> np.ndarray:
-    time = np.array(input_model.timestamps)
+def convert_data(inputs: DataModel, input_vars: List[str]) -> np.ndarray:
+    """Turn DataModel (inputs only) into structured array for FMPy"""
+    time = np.array(inputs.timestamps)
     dtype = [('time','f8')] + [(name,'f8') for name in input_vars]
     rows = []
     for i in range(len(time)):
-        row = (time[i],) + tuple(input_model.outputs[name][i] for name in input_vars)
+        row = (time[i],) + tuple(inputs.signals[name][i] for name in input_vars)
         rows.append(row)
     return np.array(rows, dtype=dtype)
 
-# — 4) Simulate FMU using those inputs, return a DataModel with ALL signals —
 def simulate_fmu_with_inputs(
     fmu_path: Path,
     start_time: float,
     stop_time: float,
     output_interval: float,
     tolerance: float,
-    input_model: DataModel
+    inputs: DataModel
 ) -> DataModel:
+    """Simulate FMU using those inputs, return a DataModel with ALL signals"""
     md = read_model_description(str(fmu_path))
     input_vars  = [v.name for v in md.modelVariables if v.causality == "input"]
     output_vars = [v.name for v in md.modelVariables if v.causality == "output"]
 
-    structured_input = convert_data(input_model, input_vars)
-
-    res = simulate_fmu(
+    results = simulate_fmu(
         filename           = str(fmu_path),
         start_time         = start_time,
         stop_time          = stop_time,
         output_interval    = output_interval,
         relative_tolerance = tolerance,
-        input              = structured_input,
-        output             = ['time'] + input_vars + output_vars
+        input              = convert_data(inputs, input_vars),
+        output             = output_vars
     )
 
-    timestamps = res['time'].tolist()
-    all_sigs: Dict[str, List[float]] = {
-        name: res[name].tolist()
-        for name in res.dtype.names if name != 'time'
+    timestamps = results['time'].tolist()
+    outputs: Dict[str, List[float]] = {
+        name: results[name].tolist()
+        for name in results.dtype.names if name != 'time'
     }
 
-    return DataModel(timestamps=timestamps, outputs=all_sigs)
+    return DataModel(timestamps=timestamps, signals=outputs)
 
-# — Standalone function to create a figure for given variables —
 def make_figure(
-    timestamps: List[float],
-    signals: Dict[str, List[float]],
-    var_list: List[str],
+    signals: DataModel,
     title: str
 ) -> go.Figure:
-    vars_present = [v for v in var_list if v in signals]
+    """Standalone function to create a figure for given variables"""
     fig = make_subplots(
-        rows=len(vars_present) if vars_present else 1,
+        rows=len(signals.signals) if signals.signals else 1,
         cols=1,
         shared_xaxes=True,
-        subplot_titles=vars_present or [f"No {title.lower()} available."],
         vertical_spacing=0.05
     )
-    if vars_present:
-        for i, var in enumerate(vars_present, start=1):
+
+    if signals.signals:
+        for i, var in enumerate(signals.signals, start=1):
             fig.add_trace(
                 go.Scatter(
-                    x=timestamps,
-                    y=signals[var],
+                    x=signals.timestamps,
+                    y=signals.signals[var],
                     name=var,
                     mode='lines'
                 ),
                 row=i, col=1
             )
     fig.update_layout(
-        height=300 * (len(vars_present) or 1),
+        height=300 * (len(signals.signals) or 1),
         title_text=title,
         xaxis_title="Time (s)",
         yaxis_title="Value",
@@ -130,39 +121,34 @@ def make_figure(
     )
     return fig
 
-# — 5) Build a Dash layout from a DataModel —
 def build_dash_layout(
-    result: DataModel,
-    input_vars: List[str],
-    output_vars: List[str]
+    inputs: DataModel,
+    outputs: DataModel
 ) -> html.Div:
+    """Build a Dash layout from a DataModel"""
     return html.Div([
         dcc.Tabs([
             dcc.Tab(label="Inputs", children=[
-                dcc.Graph(figure=make_figure(result.timestamps, result.outputs, input_vars, "Inputs"))
+                dcc.Graph(figure=make_figure(inputs, "Inputs"))
             ]),
             dcc.Tab(label="Outputs", children=[
-                dcc.Graph(figure=make_figure(result.timestamps, result.outputs, output_vars, "Outputs"))
+                dcc.Graph(figure=make_figure(outputs, "Outputs"))
             ])
         ])
     ])
 
-# — 6) Helper to spin up Dash in your browser —
-def plot_in_browser(results: DataModel, fmu_path: Path):
-    md = read_model_description(str(fmu_path))
-    input_vars  = [v.name for v in md.modelVariables if v.causality == "input"]
-    output_vars = [v.name for v in md.modelVariables if v.causality == "output"]
-
+def plot_in_browser(inputs: DataModel, outputs: DataModel):
+    """Helper to spin up Dash in your browser"""
     app = dash.Dash(__name__)
-    app.layout = build_dash_layout(results, input_vars, output_vars)
+    app.layout = build_dash_layout(inputs, outputs)
     app.run(debug=True, port=8051)
 
-# — 7) Main: exactly your flow —
+################################
 if __name__ == "__main__":
     fmu_path = Path("static/fmus/LOC.fmu")
 
     # generate step inputs
-    input_data = step_input(
+    inputs = step_input(
         fmu_path           = fmu_path,
         step_input_name    = [
             "INPUT_temperature_cold_circuit_inlet",
@@ -179,14 +165,14 @@ if __name__ == "__main__":
     )
 
     # simulate FMU
-    full_result = simulate_fmu_with_inputs(
+    outputs = simulate_fmu_with_inputs(
         fmu_path        = fmu_path,
         start_time      = 0.0,
         stop_time       = 10*60.0,
         output_interval = 1.0,
         tolerance       = 1e-4,
-        input_model     = input_data
+        inputs          = inputs
     )
 
     # launch the interactive UI
-    plot_in_browser(results=full_result, fmu_path=fmu_path)
+    plot_in_browser(inputs=inputs, outputs=outputs)
