@@ -9,7 +9,7 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 from fmpy import simulate_fmu, plot_result
 
-from mcp_fmu.inputs import step_input
+from mcp_fmu.inputs import create_signal, merge_signals
 from mcp_fmu.simulation import get_all_fmu_information, simulate, simulate_with_inputs
 from mcp_fmu.schema import FMUCollection, DataModel
 from mcp_fmu.artifacts import build_dash_layout
@@ -84,17 +84,18 @@ def fmu_simulation_with_inputs(
     return simulate_with_inputs(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance, inputs)
 
 @mcp.tool()
-def create_step_inputs(
-    fmu_name: str = "LOC",
-    start_time: float = 0.0,
-    stop_time: float = 300.0,
-    dt: float = 5,
-    input_names: List[str] = ["INPUT_temperature_cold_circuit_inlet", "INPUT_massflow_cold_circuit", "SETPOINT_temperature_lube_oil", "INPUT_engine_load_0_1"],
-    step_times: List[float] = [0.0, 0.0, 150, 0.0],
-    start_values: List[float] = [50.0, 10.0, 80.0, 1.0],
-    stop_values: List[float] = [50.0, 10.0, 80.0, 1.0]
-    ) -> DataModel:
-    return step_input(FMU_DIR,fmu_name,start_time,stop_time,dt,input_names,step_times,start_values,stop_values)
+def create_signal_tool(
+    input_name: str,
+    timestamps: List[float],
+    values: List[float]
+) -> DataModel:
+    """Creates a single singal."""
+    return create_signal(input_name,timestamps,values)
+
+@mcp.tool()
+def merge_signals_tool(signals: List[DataModel]) -> DataModel:
+    return merge_signals(signals)
+
 
 @mcp.tool()
 def results_artifact(

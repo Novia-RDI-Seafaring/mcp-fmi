@@ -4,6 +4,7 @@ from typing import List, Dict
 from mcp_fmu.schema import DataModel
 import numpy as np
 
+"""
 def step_input(
     FMU_DIR: Path,
     fmu_name: str,
@@ -15,7 +16,7 @@ def step_input(
     start_values: List[float],
     stop_values: List[float]
 ) -> DataModel:
-    """Build step inputs for a list of FMU inputs"""
+    ```Build step inputs for a list of FMU inputs```
 
     fmu_path = FMU_DIR / f"{fmu_name}.fmu"
     md = read_model_description(str(fmu_path))
@@ -43,30 +44,60 @@ def step_input(
             signals[var] = np.zeros_like(time).tolist()
 
     return DataModel(timestamps=time.tolist(), signals=signals)
+"""
 
-def convert_data(input_model: DataModel, input_vars: List[str]) -> np.ndarray:
-    """Convert DataModel (inputs only) into structured array for FMPy"""
+def ndarray_to_data_model(data: np.ndarray) -> DataModel:
+    """
+    Convert a structured numpy array from FMPy into a DataModel.
 
-    time = np.array(input_model.timestamps)
-    dtype = [('time','f8')] + [(name,'f8') for name in input_vars]
+    Args:
+        results: Structured numpy array with a 'time' field and one field per variable.
+
+    Returns:
+        DataModel: Contains 'timestamps' and 'signals' for each variable.
+    """
+    timestamps = data['time'].tolist()
+    signals: Dict[str, List[float]] = {
+        name: data[name].tolist()
+        for name in data.dtype.names
+        if name != 'time'
+    }
+    return DataModel(timestamps=timestamps, signals=signals)
+
+def data_model_to_ndarray(input_model: DataModel) -> np.ndarray:
+    """
+    Convert a DataModel of inputs into a structured numpy array for FMPy.
+
+    Asgs:
+        input_model: DataModel containing 'timestamps' and 'signals'.
+
+    Returns:
+        Structured numpy array with dtype [('time', 'f8'), ...] and one row per timestamp.
+    """
+    # Extract timestamps and variable names
+    timestamps = input_model.timestamps
+    input_vars = list(input_model.signals.keys())
+
+    # Define structured dtype: time plus each variable in the model
+    dtype = [('time', 'f8')] + [(name, 'f8') for name in input_vars]
+
+    # Build each row as a tuple: (time, *values)
     rows = []
-    for i in range(len(time)):
-        row = (time[i],) + tuple(input_model.signals[name][i] for name in input_vars)
-        rows.append(row)
+    for idx, t in enumerate(timestamps):
+        values = tuple(input_model.signals[name][idx] for name in input_vars)
+        rows.append((t,) + values)
+
     return np.array(rows, dtype=dtype)
 
-###
-
-def get_input_names(md) -> List[str]:   
-    return [v.name for v in md.modelVariables if v.causality == 'input']
-
-def generate_signal(
+def create_signal(
         input_name: str,
         timestamps: List[float],
         values: List[float]
 ) -> DataModel:
     """
     Create a DataModel with a single input signal populated with values.
+    Returns:
+        Structured numpy array with dtype [('time', 'f8'), ...] and one row per timestamp.
     """
     return DataModel(
         timestamps=timestamps,

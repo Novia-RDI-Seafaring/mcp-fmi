@@ -3,9 +3,10 @@ from pydantic import BaseModel
 from typing import List, Dict
 from pathlib import Path
 from fmpy import simulate_fmu, plot_result, read_model_description
+import numpy as nd
 
 from mcp_fmu.schema import *
-from mcp_fmu.inputs import convert_data
+from mcp_fmu.inputs import data_model_to_ndarray, ndarray_to_data_model
 
 def get_fmu_paths(fmu_dir: Path) -> FMUPaths:
     paths = [f.as_posix() for f in fmu_dir.glob("*.fmu") if f.is_file()]
@@ -80,16 +81,23 @@ def get_all_fmu_information(FMU_DIR) -> FMUCollection:
 
     return FMUCollection(fmus=infos)
 
-def simulate(FMU_DIR: Path,fmu_name: str,start_time: float,stop_time: float,output_interval: float,tolerance: float) -> DataModel:
-    
+def simulate(
+    FMU_DIR: Path,
+    fmu_name: str,
+    start_time: float,
+    stop_time: float,
+    output_interval: float,
+    tolerance: float
+) -> DataModel:
     "Simulates an FMU model"
+
     # simulate
     fmu_path = FMU_DIR / f"{fmu_name}.fmu"
     if not fmu_path.is_file():
         raise FileNotFoundError(f"FMU not found: {fmu_path}")
         
     #simulate fmu
-    result = simulate_fmu(
+    results = simulate_fmu(
         filename=str(fmu_path),
         start_time=start_time,
         stop_time=stop_time,
@@ -97,50 +105,30 @@ def simulate(FMU_DIR: Path,fmu_name: str,start_time: float,stop_time: float,outp
         relative_tolerance=tolerance,
         )
 
-    # get timestamps
-    time_key = "time" if "time" in result.dtype.names else "timestamp"
-    timestamps = result[time_key].tolist()
-
-    outputs = {
-        name: result[name].tolist()
-        for name in result.dtype.names
-        if name != time_key
-    }
-
-    return DataModel(timestamps=timestamps, signals=outputs)
+    return ndarray_to_data_model(results)
 
 def simulate_with_inputs(
     FMU_DIR: Path,
-    fmu_name:str,
+    fmu_name: str,
     start_time: float,
     stop_time: float,
     output_interval: float,
     tolerance: float,
     inputs: DataModel
 ) -> DataModel:
-    """ Simulates FMU using inputs and returns the results as a DataModel"""
+    """Simulate FMU using those inputs, return a DataModel with ALL signals"""
 
     fmu_path = FMU_DIR / f"{fmu_name}.fmu"
-    md = read_model_description(str(fmu_path))
-    input_vars  = [v.name for v in md.modelVariables if v.causality == "input"]
-    output_vars = [v.name for v in md.modelVariables if v.causality == "output"]
+    if not fmu_path.is_file():
+        raise FileNotFoundError(f"FMU not found: {fmu_path}")
 
-    structured_input = convert_data(inputs, input_vars)
-
-    res = simulate_fmu(
+    results = simulate_fmu(
         filename           = str(fmu_path),
         start_time         = start_time,
         stop_time          = stop_time,
         output_interval    = output_interval,
         relative_tolerance = tolerance,
-        input              = structured_input,
-        output             = ['time'] + input_vars + output_vars
+        input              = data_model_to_ndarray(inputs)
     )
 
-    timestamps = res['time'].tolist()
-    all_sigs: Dict[str, List[float]] = {
-        name: res[name].tolist()
-        for name in res.dtype.names if name != 'time'
-    }
-
-    return DataModel(timestamps=timestamps, signals=all_sigs)
+    return ndarray_to_data_model(results)
