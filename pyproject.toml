@@ -25,5 +25,5 @@ asyncio_default_fixture_loop_scope = "function"
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
-[project.dependencies]
-mcp-fmu = { path = ".", develop = true }
+[tool.setuptools.packages.find]
+where = ["src"]
