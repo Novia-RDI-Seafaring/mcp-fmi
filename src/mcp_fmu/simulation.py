@@ -2,7 +2,7 @@ import os
 from pydantic import BaseModel
 from typing import List, Dict
 from pathlib import Path
-from fmpy import simulate_fmu, plot_result, read_model_description
+from fmpy import simulate_fmu, read_model_description
 import numpy as nd
 
 from mcp_fmu.schema import *
@@ -69,7 +69,7 @@ def get_fmu_information(fmu_path: str) -> FMUInfo:
         simulation=simulation_description
     )
 
-def get_all_fmu_information(FMU_DIR) -> FMUCollection:
+def fmu_information(FMU_DIR) -> FMUCollection:
     """Lists all FMU models with full metadata, variables, and simulation defaults."""
     fmu_paths_list = get_fmu_paths(FMU_DIR)          # returns FMUPaths
     infos: Dict[str,str] = {}
@@ -107,7 +107,7 @@ def simulate(
 
     return ndarray_to_data_model(results)
 
-def simulate_with_inputs(
+def simulate_with_input(
     FMU_DIR: Path,
     fmu_name: str,
     start_time: float,

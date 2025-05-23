@@ -3,14 +3,12 @@ import os
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
-from typing import List, Dict
+from typing import List
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
-from pydantic import BaseModel
-from fmpy import simulate_fmu, plot_result
 
 from mcp_fmu.inputs import create_signal, merge_signals
-from mcp_fmu.simulation import get_all_fmu_information, simulate, simulate_with_inputs
+from mcp_fmu.simulation import fmu_information, simulate, simulate_with_input
 from mcp_fmu.schema import FMUCollection, DataModel
 from mcp_fmu.artifacts import plot_in_browser
 
@@ -47,16 +45,17 @@ mcp = FastMCP(
     )
 
 #### tools ####
+
 @mcp.tool()
 def ping() -> str:
     return "pong"
 
 @mcp.tool()
-def fmu_information() -> FMUCollection:
-    return get_all_fmu_information(FMU_DIR)
+def fmu_information_tools() -> FMUCollection:
+    return fmu_information(FMU_DIR)
 
 @mcp.tool()
-def fmu_simulation(
+def simulate_tool(
     fmu_name: str = "BouncingBall",
     start_time: float = 0.0,
     stop_time: float = 1.0,
@@ -71,7 +70,7 @@ def fmu_simulation(
     return simulate(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance)
 
 @mcp.tool()
-def fmu_simulation_with_inputs(
+def simulate_with_input_tool(
     inputs: DataModel,
     fmu_name: str = "LOC",
     start_time: float = 0.0,
@@ -81,19 +80,34 @@ def fmu_simulation_with_inputs(
     ) -> DataModel:
     """This tool simulates an FMU model with inputs.
     """
-    return simulate_with_inputs(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance, inputs)
+    return simulate_with_input(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance, inputs)
 
 @mcp.tool()
 def create_signal_tool(
-    input_name: str,
+    signal_name: str,
     timestamps: List[float],
     values: List[float]
 ) -> DataModel:
-    """Creates a single singal."""
-    return create_signal(input_name,timestamps,values)
+    """Creates a single signal.
+    Args:
+    signal_name (str): Name of the signal
+    timestamps (List(float)): List of timestamps
+    values (List(float)): List of signal values corresponsing to the tiemstamps.
+
+    Returns:
+    DataModel
+    """
+    return create_signal(signal_name,timestamps,values)
 
 @mcp.tool()
 def merge_signals_tool(signals: List[DataModel]) -> DataModel:
+    """Merges multiple signals into signle DataModel.
+    Args:
+    signals List[DataModel]: List of signals
+
+    Returns:
+    DataModel
+    """
     return merge_signals(signals)
 
 @mcp.tool()
