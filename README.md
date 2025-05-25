@@ -5,7 +5,7 @@
 
 <p align="center">
     <b>Model Context Protocol - Functional Mockup Units</b>. <br />
-    Makes your simulation models available as tools for AI-based agents.
+    Makes your FMU simulation models available as tools for LLM-based agents.
 </p>
 
 <p align="center">
