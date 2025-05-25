@@ -21,7 +21,7 @@
 </p>
 
 # MCP - Functional Mockup Units
-This package allows integrates FMU simulation models as tools LLM-based agents through the MCP. This is an unofficial MCP-integration  the [FMPy](https://fmpy.readthedocs.io/en/latest/) package.
+This package integrates FMU simulation models as tools LLM-based agents through the MCP. This is an unofficial MCP-integration  the [FMPy](https://fmpy.readthedocs.io/en/latest/) package.
 
 [The Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open standard for integrating large language model (LLM) applications with external data sources and tools. It provides a standardized way to supply LLMs with the context they need for advanced reasoning and interaction.
 
