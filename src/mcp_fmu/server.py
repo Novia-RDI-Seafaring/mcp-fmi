@@ -51,7 +51,7 @@ def ping() -> str:
     return "pong"
 
 @mcp.tool()
-def fmu_information_tools() -> FMUCollection:
+def fmu_information_tool() -> FMUCollection:
     return fmu_information(FMU_DIR)
 
 @mcp.tool()
