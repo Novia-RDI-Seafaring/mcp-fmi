@@ -3,7 +3,7 @@ name = "mcp-fmi"
 dynamic = ["version"]
 description = "Unofficial integration of fmpy with mcp."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "dash>=3.0.4",
     "mcp[cli]>=1.9.0",
