@@ -15,7 +15,7 @@
   <a href="https://www.virtualseatrial.fi/" target="_blank">
       Research Project
   </a>|
-  <a href="mailto:mikael.manngard@novia.fi?subject=MCP-FMU:">Contact</a>
+  <a href="mailto:mikael.manngard@novia.fi?subject=MCP-FMI:">Contact</a>
 
 </p>
 
@@ -24,7 +24,7 @@
     <img src="https://img.shields.io/badge/Python-3.11%2B-blue" alt="Python Version">
   </a>
   <a href="https://opensource.org/licenses/MIT">
-    <img src="https://img.shields.io/github/license/Novia-RDI-Seafaring/mcp-fmu" alt="License: MIT">
+    <img src="https://img.shields.io/github/license/Novia-RDI-Seafaring/mcp-fmi" alt="License: MIT">
   </a>
   <a href="https://www.businessfinland.fi/">
     <img src="https://img.shields.io/badge/Funded%20by-Business%20Finland-blue" alt="Funded by Business Finland">
@@ -82,7 +82,7 @@ uv pip install -e .
 ## Run the MCP-FMI server
 Run the server and the MCP Inspector:
 ```bash
-uv run --with mcp --with mcp-fmu --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmu/server.py
+uv run --with mcp --with mcp-fmi --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmi/server.py
 ```
 
 ## Claude Desktop Integration
@@ -90,7 +90,7 @@ Update the `claude_desktop_config.json` file with:
 ```json
 {
   "mcpServers": {
-    "MCP-FMU Server": {
+    "MCP-FMI Server": {
       "command": "LOCAL_PATCH_TO_UV\\uv.EXE",
       "args": [
         "run",
@@ -102,10 +102,10 @@ Update the `claude_desktop_config.json` file with:
         "--with", "numpy",
         "mcp",
         "run",
-        "LOCAL_PATH_TO_PROJECT\\mcp-fmu\\src\\mcp_fmu\\server.py"
+        "LOCAL_PATH_TO_PROJECT\\mcp-fmi\\src\\mcp_fmi\\server.py"
       ],
       "env": {
-        "PYTHONPATH": "LOCAL_PATH_TO_PROJECT\\mcp-fmu\\src"
+        "PYTHONPATH": "LOCAL_PATH_TO_PROJECT\\mcp-fmi\\src"
       }
     }
   }
