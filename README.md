@@ -24,7 +24,7 @@
     <img src="https://img.shields.io/badge/Python-3.11%2B-blue" alt="Python Version">
   </a>
   <a href="https://opensource.org/licenses/MIT">
-    <img src="https://img.shields.io/github/license/Novia-RDI-Seafaring/mcp-fmu" alt="License: MIT">
+    <img src="https://img.shields.io/github/license/Novia-RDI-Seafaring/mcp-fmi" alt="License: MIT">
   </a>
   <a href="https://www.businessfinland.fi/">
     <img src="https://img.shields.io/badge/Funded%20by-Business%20Finland-blue" alt="Funded by Business Finland">
