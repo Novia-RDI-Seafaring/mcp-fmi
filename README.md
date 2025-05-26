@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-    <b>Model Context Protocol - Functional Mockup Units</b>. <br />
+    <b>Model Context Protocol - Functional Mockup Units</b> <br />
     Makes your simulation models available as tools for AI-based agents.
 </p>
 
@@ -13,7 +13,7 @@
       Novia UAS
   </a>|
   <a href="https://www.virtualseatrial.fi/" target="_blank">
-      Project homepage
+      Project
   </a>|
   <a href="https://github.com/mcp-fmu/chroma/blob/master/LICENSE" target="_blank">
       License
@@ -21,7 +21,7 @@
 </p>
 
 # MCP - Functional Mockup Units
-This package allows integrates FMU simulation models as tools LLM-based agents through the MCP. This is an unofficial MCP-integration  the [FMPy](https://fmpy.readthedocs.io/en/latest/) package.
+This package integrates FMU simulation models as tools for LLM-based agents through the MCP. This is an unofficial MCP-integration of the [FMPy](https://fmpy.readthedocs.io/en/latest/) package.
 
 [The Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open standard for integrating large language model (LLM) applications with external data sources and tools. It provides a standardized way to supply LLMs with the context they need for advanced reasoning and interaction.
 
@@ -41,12 +41,6 @@ List of implemented tools:
 - `create_signal_tool` generates an input-sequence object for a single input.
 - `merge_signals_tool` merges multiple signel objects that can be used as an input for a simulation.
 - `show_results_in_browser_tool` visualizes simulation results in browser.
-
-## Tools roadmap
-List of tools to be implemented:
-- `show_results_as_artifact_tool` visualized simulation results as interractive artifacts in Claude Desktop.
-- `co_simulate_tool` co-simulates multiple FMU models.
-
 
 ## Prerequisites
 
@@ -74,7 +68,6 @@ source .venv/bin/activate
 uv pip install -e .
 ```
 
-## Run the MCP-FMU server
 Then add MCP to your project dependencies:
 ```cmd
 uv add "mcp[cli]"
@@ -85,17 +78,14 @@ To run the mcp command with uv:
 uv run mcp
 ```
 
-Test the server with the MCP Inspector:
+## Run the MCP-FMU server
+Run the server and the MCP Inspector:
 ```bash
 uv run --with mcp --with mcp-fmu --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmu/server.py
 ```
 
 ## Claude Desktop Integration
-Install the MCP server in Claude Desktop by running
-```cmd
-mcp install src/mcp_fmu/server.py
-```
-it should write the following into the `claude_desktop_config.json` file:
+Update the `claude_desktop_config.json` file:
 ```json
 {
   "mcpServers": {
@@ -121,6 +111,19 @@ it should write the following into the `claude_desktop_config.json` file:
 }
 
 ```
+
+## Example use
+Example queries:
+- What simulation models do you have available?
+- Give me informaiton of input and output signals of model `model name`.
+- Who created the model `model name` and when was it last updated?
+- Make a step-change in input `input name` at 60s. Keep the other inputs constant with default values.
+- Simulate `model name` with generated inputs.
+
+## Future work
+List of tools to be implemented:
+- `show_results_as_artifact_tool` visualized simulation results as interractive artifacts in Claude Desktop.
+- `co_simulate_tool` co-simulates multiple FMU models.
 
 ## Acknowledgements
 This work was done in the Business Finland funded project [Virtual Sea Trial](https://virtualseatrial.fi)
