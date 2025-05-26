@@ -131,7 +131,7 @@ If you use this package in your research, please cite it using the following Bib
 ```bibtex
 @misc{MCP-FMU,
   author = {Mikael Manngård, Christoffer Björkskog},
-  title = {MCP-FMU: MCP Server for Functional Mockup Units},
+  title = {MCP-FMI: MCP Server for the Functional Mock-Up Interface},
   year = {2025},
   howpublished = {\url{https://github.com/Novia-RDI-Seafaring/mcp-fmu}},
 }
