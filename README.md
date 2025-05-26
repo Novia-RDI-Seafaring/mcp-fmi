@@ -5,7 +5,7 @@
 
 <p align="center">
     <b>Model Context Protocol - Functional Mockup Units</b> <br />
-    Makes your simulation models available as tools for AI-based agents.
+    Makes your simulation models available as tools for LLM-based agents.
 </p>
 
 <p align="center">
@@ -23,15 +23,15 @@
 # MCP - Functional Mockup Units
 This package integrates FMU simulation models as tools for LLM-based agents through the MCP. This is an unofficial MCP-integration of the [FMPy](https://fmpy.readthedocs.io/en/latest/) package.
 
-[The Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open standard for integrating large language model (LLM) applications with external data sources and tools. It provides a standardized way to supply LLMs with the context they need for advanced reasoning and interaction.
+[The Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open protocol that standardizes how applications can provide context to Large Language Models (LLMs). MCP helps when integrating data and tools to LLM-based agents. 
 
-[The Functional Mockup Interface (FMI)](https://fmi-standard.org/) is a widely adopted standard for exchanging and co-simulating dynamic models across simulation platforms. **A Functional Mockup Unit (FMU)** is a file containing a simulation model that adheres to the FMI standard. 
+[The Functional Mockup Interface (FMI)](https://fmi-standard.org/) is a free standard that defines a container and interface to exchange dynamic simulation models across simulation platforms. A **Functional Mockup Unit (FMU)** is a file containing a simulation model that adheres to the FMI standard. 
 
-## Features
-- **Instantiate simulations** from chat interfaces.
-- **Simulation models as tools** for AI agents. 
-- **Generate input signals from natural language**
--**Visualize simulation results** as itnerractive artifacts in Claude Desktop or in browser.
+## MCP-FMU Features
+- **Manage simulations** from chat interfaces.
+- **Use simulation models as tools** for LLM-based agents. 
+- **Generate input signals** for simulations from natural language.
+- **Visualize simulation results** in browser.
 
 ## Implemented tools
 List of implemented tools:
@@ -44,7 +44,7 @@ List of implemented tools:
 
 ## Prerequisites
 
-- Python 3.13 or higher
+- Python 3.11 or higher
 - [uv](https://docs.astral.sh/uv/pip/packages/) package manager
 - Claude Desktop (for desktop integration)
 
@@ -68,16 +68,6 @@ source .venv/bin/activate
 uv pip install -e .
 ```
 
-Then add MCP to your project dependencies:
-```cmd
-uv add "mcp[cli]"
-```
-
-To run the mcp command with uv:
-```cmd
-uv run mcp
-```
-
 ## Run the MCP-FMU server
 Run the server and the MCP Inspector:
 ```bash
@@ -85,7 +75,7 @@ uv run --with mcp --with mcp-fmu --with python-dotenv --with fmpy --with numpy -
 ```
 
 ## Claude Desktop Integration
-Update the `claude_desktop_config.json` file:
+Update the `claude_desktop_config.json` file with:
 ```json
 {
   "mcpServers": {
@@ -112,7 +102,7 @@ Update the `claude_desktop_config.json` file:
 
 ```
 
-## Example use
+## Example usage
 Example queries:
 - What simulation models do you have available?
 - Give me informaiton of input and output signals of model `model name`.
@@ -125,5 +115,22 @@ List of tools to be implemented:
 - `show_results_as_artifact_tool` visualized simulation results as interractive artifacts in Claude Desktop.
 - `co_simulate_tool` co-simulates multiple FMU models.
 
+## Citation
+If you use this package in your research, please cite it using the following BibTeX entry:
+
+```bibtex
+@misc{MCP-FMU,
+  author = {Mikael Manngård, Christoffer Björkskog},
+  title = {MCP-FMU: MCP Server for Functional Mockup Units},
+  year = {2025},
+  howpublished = {\url{https://github.com/Novia-RDI-Seafaring/mcp-fmu}},
+}
+```
+
 ## Acknowledgements
 This work was done in the Business Finland funded project [Virtual Sea Trial](https://virtualseatrial.fi)
+
+## License
+This package is licensed under the MIT License license. See the [LICENSE](./LICENSE) file for more details.
+
+
