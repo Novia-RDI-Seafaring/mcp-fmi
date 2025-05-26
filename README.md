@@ -18,7 +18,6 @@
   <a href="mailto:mikael.manngard@novia.fi?subject=MCP-FMI:">Contact</a>
 
 </p>
-
 <p align="center">
   <a href="https://www.python.org/">
     <img src="https://img.shields.io/badge/Python-3.11%2B-blue" alt="Python Version">
