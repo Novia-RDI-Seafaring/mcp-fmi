@@ -129,7 +129,7 @@ List of tools to be implemented:
 If you use this package in your research, please cite it using the following BibTeX entry:
 
 ```bibtex
-@misc{MCP-FMU,
+@misc{MCP-FMI,
   author = {Mikael Manngård, Christoffer Björkskog},
   title = {MCP-FMI: MCP Server for the Functional Mock-Up Interface},
   year = {2025},
