@@ -13,10 +13,21 @@
       Novia UAS
   </a>|
   <a href="https://www.virtualseatrial.fi/" target="_blank">
-      Project
+      Research Project
   </a>|
-  <a href="https://github.com/mcp-fmu/chroma/blob/master/LICENSE" target="_blank">
-      License
+  <a href="mailto:mikael.manngard@novia.fi?subject=MCP-FMU:">Contact</a>
+
+</p>
+
+<p align="center">
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Python-3.11%2B-blue" alt="Python Version">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/github/license/Novia-RDI-Seafaring/mcp-fmu" alt="License: MIT">
+  </a>
+  <a href="https://www.businessfinland.fi/">
+    <img src="https://img.shields.io/badge/Funded%20by-Business%20Finland-blue" alt="Funded by Business Finland">
   </a>
 </p>
 
