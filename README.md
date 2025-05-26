@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-    <b>Model Context Protocol - Functional Mockup Interface</b> <br />
+    <b>Model Context Protocol - Functional Mock-up Interface</b> <br />
     Makes your simulation models available as tools for LLM-based agents.
 </p>
 
