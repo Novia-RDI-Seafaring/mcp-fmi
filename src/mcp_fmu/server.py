@@ -47,10 +47,6 @@ mcp = FastMCP(
 #### tools ####
 
 @mcp.tool()
-def ping() -> str:
-    return "pong"
-
-@mcp.tool()
 def fmu_information_tool() -> FMUCollection:
     return fmu_information(FMU_DIR)
 
