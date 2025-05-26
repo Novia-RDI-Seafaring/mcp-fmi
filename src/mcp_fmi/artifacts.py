@@ -8,7 +8,7 @@ import dash
 from dash import dcc, html
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from mcp_fmu.schema import DataModel, PlotHttpURL
+from mcp_fmi.schema import DataModel, PlotHttpURL
 
 import threading
 

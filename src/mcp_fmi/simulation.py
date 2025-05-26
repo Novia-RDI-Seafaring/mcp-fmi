@@ -5,8 +5,8 @@ from pathlib import Path
 from fmpy import simulate_fmu, read_model_description
 import numpy as nd
 
-from mcp_fmu.schema import *
-from mcp_fmu.inputs import data_model_to_ndarray, ndarray_to_data_model
+from mcp_fmi.schema import *
+from mcp_fmi.inputs import data_model_to_ndarray, ndarray_to_data_model
 
 def get_fmu_paths(fmu_dir: Path) -> FMUPaths:
     paths = [f.as_posix() for f in fmu_dir.glob("*.fmu") if f.is_file()]

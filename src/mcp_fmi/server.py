@@ -7,10 +7,10 @@ from typing import List
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
-from mcp_fmu.inputs import create_signal, merge_signals
-from mcp_fmu.simulation import fmu_information, simulate, simulate_with_input
-from mcp_fmu.schema import FMUCollection, DataModel
-from mcp_fmu.artifacts import plot_in_browser
+from mcp_fmi.inputs import create_signal, merge_signals
+from mcp_fmi.simulation import fmu_information, simulate, simulate_with_input
+from mcp_fmi.schema import FMUCollection, DataModel
+from mcp_fmi.artifacts import plot_in_browser
 
 from dash import dcc, html
 

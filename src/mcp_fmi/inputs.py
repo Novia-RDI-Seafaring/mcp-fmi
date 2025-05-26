@@ -1,7 +1,7 @@
 from fmpy import simulate_fmu, read_model_description
 from pathlib import Path
 from typing import List, Dict
-from mcp_fmu.schema import DataModel
+from mcp_fmi.schema import DataModel
 import numpy as np
 
 def ndarray_to_data_model(data: np.ndarray) -> DataModel:

@@ -1,5 +1,5 @@
 import pytest
-from mcp_fmu.server import mcp, ping  # make sure you're importing the right mcp instance
+from mcp_fmi.server import mcp, ping  # make sure you're importing the right mcp instance
 
 @pytest.mark.asyncio
 async def test_ping_tool():
