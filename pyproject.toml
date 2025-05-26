@@ -33,11 +33,11 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_fmi"]
 
 [tool.hatch.version]
-source = "vcs"
+source = "file"  # This tells hatch to read/write version from a file
