@@ -1,10 +1,10 @@
 <p align="center">
-  <a href="https://novia.fi"><img src="./public/mcp_fmu_logo.png" alt="MCP-FMU" width="100">
+  <a href="https://novia.fi"><img src="./public/mcp_fmi_logo.png" alt="MCP-FMI" width="100">
 </a>
 </p>
 
 <p align="center">
-    <b>Model Context Protocol - Functional Mockup Units</b> <br />
+    <b>Model Context Protocol - Functional Mockup Interface</b> <br />
     Makes your simulation models available as tools for LLM-based agents.
 </p>
 
@@ -38,7 +38,7 @@ This package integrates FMU simulation models as tools for LLM-based agents thro
 
 [The Functional Mockup Interface (FMI)](https://fmi-standard.org/) is a free standard that defines a container and interface to exchange dynamic simulation models across simulation platforms. A **Functional Mockup Unit (FMU)** is a file containing a simulation model that adheres to the FMI standard. 
 
-## MCP-FMU Features
+## MCP-FMI Features
 - **Manage simulations** from chat interfaces.
 - **Use simulation models as tools** for LLM-based agents. 
 - **Generate input signals** for simulations from natural language.
@@ -79,7 +79,7 @@ source .venv/bin/activate
 uv pip install -e .
 ```
 
-## Run the MCP-FMU server
+## Run the MCP-FMI server
 Run the server and the MCP Inspector:
 ```bash
 uv run --with mcp --with mcp-fmu --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmu/server.py
