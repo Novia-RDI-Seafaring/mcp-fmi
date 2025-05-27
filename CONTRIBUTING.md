@@ -21,6 +21,23 @@ Thank you for your interest in contributing to MCP-FMU! This document provides g
    uv pip install -e ".[dev]"
    ```
 
+### Running with Claude Desktop
+To run the package in editable mode with Claude Desktop:
+
+1. Update your `claude_desktop_config.json`:
+   ```json
+   {
+     "mcpServers": {
+       "MCP-FMI Server": {
+         "command": "uv",
+         "args": ["run", "--with-editable", "/absolute/path/to/mcp-fmu", "mcp-fmi", "/path/to/folder/with/fmu/files"]
+       }
+     }
+   }
+   ```
+
+This will run the package in editable mode, allowing you to make changes to the code and see them reflected immediately in Claude Desktop.
+
 ### Running the Server
 Run the server and the MCP Inspector:
 ```bash
