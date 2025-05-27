@@ -101,7 +101,7 @@ def create_signal_tool(
     Args:
     signal_name (str): Name of the signal
     timestamps (List(float)): List of timestamps
-    values (List(float)): List of signal values corresponsing to the tiemstamps.
+    values (List(float)): List of signal values corresponsing to the timestamps.
 
     Returns:
     DataModel
@@ -110,7 +110,7 @@ def create_signal_tool(
 
 @mcp.tool()
 def merge_signals_tool(signals: List[DataModel]) -> DataModel:
-    """Merges multiple signals into signle DataModel.
+    """Merges multiple signals into single DataModel.
     Args:
     signals List[DataModel]: List of signals
 
@@ -130,7 +130,7 @@ def show_results_in_browser_tool(
     outputs (DataModel): outputs from a simulation
 
     Returns:
-    HttpURL to the visualizations 
+    HttpURL to the visualizations in the browser
     """
     return plot_in_browser(inputs, outputs)
 
