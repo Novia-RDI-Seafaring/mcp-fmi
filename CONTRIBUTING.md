@@ -51,14 +51,18 @@ hatch version major  # 0.0.1 -> 1.0.0
 
 ### Releasing a New Version
 1. Ensure all tests pass: `pytest`
-2. Bump version: `hatch version patch` (or minor/major)
-3. Create a git tag: `git tag v$(hatch version)`
-4. Push changes and tag:
+2. Bump version and commit changes:
    ```bash
-   git push
+   hatch version patch  # or minor/major
+   git add -p
+   git commit
+   ```
+3. Create and push the tag:
+   ```bash
+   git tag v$(hatch version)
    git push --tags
    ```
-5. GitHub Actions will automatically:
+4. GitHub Actions will automatically:
    - Build the package using `uv build`
    - Run tests
    - Publish to PyPI
