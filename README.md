@@ -87,11 +87,7 @@ Update the `claude_desktop_config.json` file with:
   "mcpServers": {
     "MCP-FMI Server": {
       "command": "uvx",
-      "args": [
-        "mcp-fmi",
-        "--fmu-dir",
-        "/full/path/to/fmu/folder"
-        ],
+      "args": ["mcp-fmi",  "/path/to/folder/with/fmu/files"],
     }
   }
 }
