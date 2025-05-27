@@ -90,22 +90,12 @@ Update the `claude_desktop_config.json` file with:
 {
   "mcpServers": {
     "MCP-FMI Server": {
-      "command": "LOCAL_PATCH_TO_UV\\uv.EXE",
+      "command": "uvx",
       "args": [
-        "run",
-        "--with", "dash",
-        "--with", "fmpy",
-        "--with", "mcp[cli]",
-        "--with", "pydantic",
-        "--with", "python-dotenv",
-        "--with", "numpy",
-        "mcp",
-        "run",
-        "LOCAL_PATH_TO_PROJECT\\mcp-fmi\\src\\mcp_fmi\\server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "LOCAL_PATH_TO_PROJECT\\mcp-fmi\\src"
-      }
+        "mcp-fmi",
+        "--fmu-dir",
+        "/full/path/to/fmu/folder"
+        ],
     }
   }
 }

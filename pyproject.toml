@@ -40,4 +40,4 @@ build-backend = "setuptools.build_meta"
 packages = ["src/mcp_fmi"]
 
 [tool.hatch.version]
-source = "file"  # This tells hatch to read/write version from a file
+path = "src/mcp_fmi/__init__.py"
