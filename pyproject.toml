@@ -41,3 +41,9 @@ packages = ["src/mcp_fmi"]
 
 [tool.hatch.version]
 path = "src/mcp_fmi/__init__.py"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "mcp_fmi.__version__"}
