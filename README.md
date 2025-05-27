@@ -34,17 +34,19 @@
 This is an unofficial MCP-integration of the [FMPy](https://fmpy.readthedocs.io/en/latest/) package.
 
 ## Table of Content
-- [1. Overview](#overview)
-  - [1.1. Features](#features)
-  - [1.2. Implemented tools](#implemented-tools)
-  - [1.3. Standards](#standards)
-- [2. Prerequisites](#prerequisites)
-- [3. Claude Desktop integration](#claude-desktop-integration)
-- [4. Example usage](#example-usage)
-- [5. Future work](#future-work)
-- [6. Citation](#citation)
-- [7. Acknowledgements](#acknowledgements)
-- [8. License](#license)
+1. [Overview](#overview)  
+   1.1 [Features](#features)  
+   1.2 [Implemented Tools](#implemented-tools)  
+   1.3 [Standards](#standards)  
+2. [Prerequisites](#prerequisites)  
+3. [Claude Desktop Integration](#claude-desktop-integration)
+5. [For Developers](#for-developers) 
+4. [Example Usage](#example-usage)   
+6. [Future Work](#future-work)  
+7. [Citation](#citation)  
+8. [Acknowledgements](#acknowledgements)  
+9. [License](#license)  
+
 
 ## Overview
 This package integrates FMU simulation models as tools for LLM-based agents through the MCP. By allowing simulation models to be accessed and orchestrated directly from chat interfaces, simulation models become accessible to virtually anyone. This means simulation capabilities can be shared across teams and organizations, including with non-experts, bringing the benefits of simulation to everyone you collaborate with.
@@ -80,7 +82,7 @@ This package bridges two standards:
 - [uv](https://docs.astral.sh/uv/pip/packages/) package manager
 - Claude Desktop (for desktop integration)
 
-## Claude Desktop Integration
+## Usage with Claude Desktop
 Update the `claude_desktop_config.json` file with:
 ```json
 {
@@ -93,6 +95,9 @@ Update the `claude_desktop_config.json` file with:
 }
 
 ```
+
+## For developers
+Intructions how to run the package in editable mode: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Example usage
 
