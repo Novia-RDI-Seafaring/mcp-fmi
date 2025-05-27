@@ -39,5 +39,5 @@ jobs:
         UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         source .venv/bin/activate
-        hatch build
+        uv build
         uv publish 
