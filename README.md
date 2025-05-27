@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://novia.fi"><img src="./public/mcp_fmi_logo.png" alt="MCP-FMI" width="100">
+  <a href="https://novia.fi"><img src="public/mcp_fmi_logo.png" alt="MCP-FMI" width="100">
 </a>
 </p>
 
@@ -35,6 +35,12 @@ This package integrates FMU simulation models as tools for LLM-based agents thro
 
 [The Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open protocol that standardizes how applications can provide context to Large Language Models (LLMs). MCP helps when integrating data and tools to LLM-based agents. 
 
+## Architecture
+<p align="center">
+  <img src="public/mcp.svg" alt="MCP Architecture" width="100%">
+</p>
+
+
 [The Functional Mockup Interface (FMI)](https://fmi-standard.org/) is a free standard that defines a container and interface to exchange dynamic simulation models across simulation platforms. A **Functional Mockup Unit (FMU)** is a file containing a simulation model that adheres to the FMI standard. 
 
 ## MCP-FMI Features
@@ -51,6 +57,12 @@ List of implemented tools:
 - `create_signal_tool` generates an input-sequence object for a single input.
 - `merge_signals_tool` merges multiple signel objects that can be used as an input for a simulation.
 - `show_results_in_browser_tool` visualizes simulation results in browser.
+
+## Tool Overview
+<p align="center">
+  <img src="public/tools.svg" alt="MCP-FMI Tools" width="100%">
+</p>
+
 
 ## Prerequisites
 
