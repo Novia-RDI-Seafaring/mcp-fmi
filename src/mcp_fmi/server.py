@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from typing import List
 from pathlib import Path
+import argparse
 from mcp.server.fastmcp import FastMCP
 
 from mcp_fmi.inputs import create_signal, merge_signals
@@ -16,7 +17,15 @@ from dash import dcc, html
 
 load_dotenv()
 
-FMU_DIR = os.getenv("FMU_DIR", (Path(__file__).parents[2] / "static" / "fmus").resolve())
+# Default FMU directory path
+DEFAULT_FMU_DIR = (Path(__file__).parents[2] / "static" / "fmus").resolve()
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='MCP-FMU Server')
+    parser.add_argument('--fmu-dir', type=str, 
+                       default=str(DEFAULT_FMU_DIR),
+                       help='Path to FMU directory')
+    return parser.parse_args()
 
 ##### context manager for loading models on startup ####
 @asynccontextmanager
@@ -43,6 +52,10 @@ mcp = FastMCP(
         "numpy"
     ]
     )
+
+# Get FMU directory from command line args
+args = parse_args()
+FMU_DIR = Path(args.fmu_dir)
 
 #### tools ####
 
