@@ -55,7 +55,7 @@ hatch version major  # 0.0.1 -> 1.0.0
    ```bash
    hatch version patch  # or minor/major
    git add -p
-   git commit
+   git commit -m "Bump version to $(hatch version)"
    ```
 3. Create and push the tag:
    ```bash
