@@ -1,11 +1,11 @@
-# Contributing to MCP-FMU
+# Contributing to MCP-FMI
 
-Thank you for your interest in contributing to MCP-FMU! This document provides guidelines and instructions for development.
+Thank you for your interest in contributing to MCP-FMI! This document provides guidelines and instructions for development.
 
 ## Development Setup
 
 ### Prerequisites
-- Python 3.9 or higher
+- Python 3.11 or higher
 - [uv](https://docs.astral.sh/uv/pip/packages/) package manager
 - Git
 
@@ -30,7 +30,7 @@ To run the package in editable mode with Claude Desktop:
      "mcpServers": {
        "MCP-FMI Server": {
          "command": "uv",
-         "args": ["run", "--with-editable", "/absolute/path/to/mcp-fmu", "mcp-fmi", "/path/to/folder/with/fmu/files"]
+         "args": ["run", "--with-editable", "/absolute/path/to/mcp-fmi", "mcp-fmi", "/path/to/folder/with/fmu/files"]
        }
      }
    }
