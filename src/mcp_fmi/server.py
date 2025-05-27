@@ -22,7 +22,7 @@ DEFAULT_FMU_DIR = (Path(__file__).parents[2] / "static" / "fmus").resolve()
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MCP-FMU Server')
-    parser.add_argument('--fmu-dir', type=str, 
+    parser.add_argument('fmu_dir', type=str, nargs='?',
                        default=str(DEFAULT_FMU_DIR),
                        help='Path to FMU directory')
     return parser.parse_args()

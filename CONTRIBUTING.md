@@ -24,7 +24,11 @@ Thank you for your interest in contributing to MCP-FMU! This document provides g
 ### Running the Server
 Run the server and the MCP Inspector:
 ```bash
+# With default FMU directory (static/fmus)
 uv run --with mcp --with mcp-fmi --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmi/server.py
+
+# With custom FMU directory
+uv run --with mcp --with mcp-fmi --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmi/server.py /path/to/fmu/folder
 ```
 
 ## Development Workflow
