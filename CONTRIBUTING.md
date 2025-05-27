@@ -21,6 +21,12 @@ Thank you for your interest in contributing to MCP-FMU! This document provides g
    uv pip install -e ".[dev]"
    ```
 
+### Running the Server
+Run the server and the MCP Inspector:
+```bash
+uv run --with mcp --with mcp-fmi --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmi/server.py
+```
+
 ## Development Workflow
 
 ### Version Management
@@ -53,7 +59,7 @@ hatch version major  # 0.0.1 -> 1.0.0
    git push --tags
    ```
 5. GitHub Actions will automatically:
-   - Build the package
+   - Build the package using `uv build`
    - Run tests
    - Publish to PyPI
 
@@ -62,7 +68,7 @@ The project uses GitHub Actions to automatically publish to PyPI when you push a
 - Triggers on tags matching `v*` (e.g., `v0.1.0`)
 - Installs dependencies using `uv`
 - Runs tests
-- Builds the package using `hatch`
+- Builds the package using `uv build`
 - Publishes to PyPI
 
 You can monitor the release process in the "Actions" tab of your GitHub repository.

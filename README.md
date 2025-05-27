@@ -30,6 +30,41 @@
   </a>
 </p>
 
+
+## Prerequisites
+
+- Python 3.11 or higher
+- [uv](https://docs.astral.sh/uv/pip/packages/) package manager
+- Claude Desktop (for desktop integration)
+
+## Claude Desktop Integration
+Update the `claude_desktop_config.json` file with:
+```json
+{
+  "mcpServers": {
+    "MCP-FMI Server": {
+      "command": "uvx",
+      "args": [
+        "mcp-fmi",
+        "--fmu-dir",
+        "/full/path/to/fmu/folder"
+        ],
+    }
+  }
+}
+
+```
+
+## Example usage
+Example queries:
+- What simulation models do you have available?
+- Give me informaiton of input and output signals of model `model name`.
+- Who created the model `model name` and when was it last updated?
+- Make a step-change in input `input name` at 60s. Keep the other inputs constant with default values.
+- Simulate `model name` with generated inputs.
+
+
+
 # MCP - Functional Mockup Interface
 This package integrates FMU simulation models as tools for LLM-based agents through the MCP. This is an unofficial MCP-integration of the [FMPy](https://fmpy.readthedocs.io/en/latest/) package.
 
@@ -64,64 +99,6 @@ List of implemented tools:
 </p>
 
 
-## Prerequisites
-
-- Python 3.11 or higher
-- [uv](https://docs.astral.sh/uv/pip/packages/) package manager
-- Claude Desktop (for desktop integration)
-
-## Installation
-
-1. Create and activate a virtual environment:
-```bash
-# Create venv with uv
-uv venv
-
-# Activate on macOS/Linux
-source .venv/bin/activate
-
-# Activate on Windows
-.venv\Scripts\activate
-```
-
-2. Install dependencies:
-```bash
-# Make sure you're in the project root directory
-uv pip install -e .
-```
-
-## Run the MCP-FMI server
-Run the server and the MCP Inspector:
-```bash
-uv run --with mcp --with mcp-fmi --with python-dotenv --with fmpy --with numpy --with pydantic mcp dev src/mcp_fmi/server.py
-```
-
-## Claude Desktop Integration
-Update the `claude_desktop_config.json` file with:
-```json
-{
-  "mcpServers": {
-    "MCP-FMI Server": {
-      "command": "uvx",
-      "args": [
-        "mcp-fmi",
-        "--fmu-dir",
-        "/full/path/to/fmu/folder"
-        ],
-    }
-  }
-}
-
-```
-
-## Example usage
-Example queries:
-- What simulation models do you have available?
-- Give me informaiton of input and output signals of model `model name`.
-- Who created the model `model name` and when was it last updated?
-- Make a step-change in input `input name` at 60s. Keep the other inputs constant with default values.
-- Simulate `model name` with generated inputs.
-
 ## Future work
 List of tools to be implemented:
 - `show_results_as_artifact_tool` visualized simulation results as interractive artifacts in Claude Desktop.
@@ -135,7 +112,7 @@ If you use this package in your research, please cite it using the following Bib
   author = {Mikael Manngård, Christoffer Björkskog},
   title = {MCP-FMI: MCP Server for the Functional Mock-Up Interface},
   year = {2025},
-  howpublished = {\url{https://github.com/Novia-RDI-Seafaring/mcp-fmu}},
+  howpublished = {\url{https://github.com/Novia-RDI-Seafaring/mcp-fmi}},
 }
 ```
 
