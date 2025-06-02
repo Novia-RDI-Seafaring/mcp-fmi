@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://novia.fi"><img src="public/mcp_fmi_logo.png" alt="MCP-FMI" width="100">
+  <a href="https://novia.fi"><img src="public/mcp_fmi_logo.svg" alt="MCP-FMI" width="100">
 </a>
 </p>
 
