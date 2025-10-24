@@ -4,14 +4,15 @@ from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 from typing import List
+from pydantic import Field
 from pathlib import Path
 import argparse
 from mcp.server.fastmcp import FastMCP
 
 from mcp_fmi.inputs import create_signal, merge_signals
-from mcp_fmi.simulation import fmu_information, simulate, simulate_with_input
-from mcp_fmi.schema import FMUCollection, DataModel
-from mcp_fmi.artifacts import plot_in_browser
+from mcp_fmi.simulation import simulate, simulate_with_input
+from mcp_fmi.schema import FMUCollection, DataModel, FMUInfo
+from mcp_fmi.information import _get_model_description, _get_all_model_descriptions, _get_fmu_names
 
 from dash import dcc, html
 
@@ -54,15 +55,41 @@ mcp = FastMCP(
     )
 
 # Get FMU directory from command line args
-args = parse_args()
-FMU_DIR = Path(args.fmu_dir)
+# Only parse args if not running with MCP dev (which passes the script path as an arg)
+if __name__ == "__main__":
+    args = parse_args()
+    FMU_DIR = Path(args.fmu_dir)
+else:
+    # When running with MCP dev, use default FMU directory
+    FMU_DIR = DEFAULT_FMU_DIR
 
-#### tools ####
+### Tools retrieving information ###
 
 @mcp.tool()
-def fmu_information_tool() -> FMUCollection:
-    return fmu_information(FMU_DIR)
+def get_all_model_descriptions() -> FMUCollection:
+    """Gets the information about the FMU models in the directory.
+    Returns:
+    FMUCollection: Collection of FMU models
+    """
+    return _get_all_model_descriptions(FMU_DIR)
 
+@mcp.tool()
+def get_model_description(fmu_name: str) -> FMUInfo:
+    """Gets the model description of an FMU model.
+    Returns:
+    FMUInfo: Full FMU information object
+    """
+    return _get_model_description(FMU_DIR, fmu_name)
+
+@mcp.tool()
+def get_fmu_names() -> List[str]:
+    """Lists the models in the FMU directory.
+    Returns:
+    List[str]: List of model names
+    """
+    return _get_fmu_names(FMU_DIR)
+
+### Tool for simulation ###
 @mcp.tool()
 def simulate_tool(
     fmu_name: str = "BouncingBall",
@@ -118,22 +145,6 @@ def merge_signals_tool(signals: List[DataModel]) -> DataModel:
     DataModel
     """
     return merge_signals(signals)
-
-@mcp.tool()
-def show_results_in_browser_tool(
-    inputs: DataModel,
-    outputs: DataModel
-):
-    """Visualizes the results in browser.
-    Args:
-    inputs (DataModel): input signals used in the simulation
-    outputs (DataModel): outputs from a simulation
-
-    Returns:
-    HttpURL to the visualizations in the browser
-    """
-    return plot_in_browser(inputs, outputs)
-
 
 def main():
     mcp.run()
