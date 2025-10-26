@@ -1,19 +1,18 @@
 # server.py
 import os
+from pickle import NONE
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
-from typing import List
+from typing import List, Optional, Dict, Union, Any, Annotated
 from pathlib import Path
 import argparse
 from mcp.server.fastmcp import FastMCP
 
-from mcp_fmi.inputs import create_signal, merge_signals
-from mcp_fmi.simulation import fmu_information, simulate, simulate_with_input
-from mcp_fmi.schema import FMUCollection, DataModel
-from mcp_fmi.artifacts import plot_in_browser
-
-from dash import dcc, html
+from mcp_fmi.inputs import create_signal, merge_signals, data_model_to_ndarray, ndarray_to_data_model
+from mcp_fmi.schema import FMUCollection, DataModel, FMUInfo, SimulationModel
+from mcp_fmi.information import _get_model_description, _get_all_model_descriptions, _get_fmu_names
+from fmpy import simulate_fmu
 
 load_dotenv()
 
@@ -54,50 +53,99 @@ mcp = FastMCP(
     )
 
 # Get FMU directory from command line args
-args = parse_args()
-FMU_DIR = Path(args.fmu_dir)
+# Only parse args if not running with MCP dev (which passes the script path as an arg)
+if __name__ == "__main__":
+    args = parse_args()
+    FMU_DIR = Path(args.fmu_dir)
+else:
+    # When running with MCP dev, use default FMU directory
+    FMU_DIR = DEFAULT_FMU_DIR
 
-#### tools ####
+######### TOOLS #########
+GET_ALL_MODEL_DESCRIPTIONS_DESCRIPTION = """
+    Lists all FMU models in the directory and their information.
+    Returns:
+    FMUCollection: Collection of FMU models
+"""
+@mcp.tool(name="get_model_descriptions", description=GET_ALL_MODEL_DESCRIPTIONS_DESCRIPTION)
+def get_all_model_descriptions() -> FMUCollection:
+    return _get_all_model_descriptions(FMU_DIR)
 
-@mcp.tool()
-def fmu_information_tool() -> FMUCollection:
-    return fmu_information(FMU_DIR)
+GET_MODEL_DESCRIPTION_DESCRIPTION = """
+    Gets the model description of a specific FMU model.
 
-@mcp.tool()
-def simulate_tool(
-    fmu_name: str = "BouncingBall",
-    start_time: float = 0.0,
-    stop_time: float = 1.0,
-    output_interval: float = 0.1,
-    tolerance: float = 1E-4
-    ) -> DataModel:
-    """This tool simulates an FMU model.
-    
     Args:
-    fmu_name (str): The name of the FMU model to be simulated. 
-    """
-    return simulate(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance)
+    fmu_name: Name of the FMU model
 
-@mcp.tool()
-def simulate_with_input_tool(
-    inputs: DataModel,
-    fmu_name: str = "LOC",
-    start_time: float = 0.0,
-    stop_time: float = 300.0,
-    output_interval: float = 5,
-    tolerance: float = 1E-4,
-    ) -> DataModel:
-    """This tool simulates an FMU model with inputs.
+    Returns:
+    FMUInfo: Full FMU information object
     """
-    return simulate_with_input(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance, inputs)
+@mcp.tool(name="get_model_description", description=GET_MODEL_DESCRIPTION_DESCRIPTION)
+def get_model_description(fmu_name: str) -> FMUInfo:
+    return _get_model_description(FMU_DIR, fmu_name)
 
-@mcp.tool()
-def create_signal_tool(
-    signal_name: str,
-    timestamps: List[float],
-    values: List[float]
-) -> DataModel:
-    """Creates a single signal.
+GET_FMU_NAMES_DESCRIPTION = """Lists the models in the FMU directory.
+    Returns:
+    List[str]: List of model names
+    """
+@mcp.tool(name="get_fmu_names", description=GET_FMU_NAMES_DESCRIPTION)
+def get_fmu_names() -> List[str]:
+    return _get_fmu_names(FMU_DIR)
+
+SIMULATION_DESCRIPTION = """
+    Simulates a given FMU model.
+
+    Args:
+    sim: SimulationModel containing the simulation parameters
+    
+    Returns:
+    DataModel: Simulation results
+
+    Example JSON call body:
+    {
+    "fmu_name": "BouncingBall",
+    "start_time": 0.0,
+    "stop_time": 5.0,
+    "output": ["h", "v"],
+    "output_interval": 0.1,
+    "start_values": {
+        "h": 1.0,
+        "v": 0.0,
+        "g": -9.81
+    }
+    }
+"""
+@mcp.tool(name="simulate_fmu", description=SIMULATION_DESCRIPTION)
+def simulate_tool(sim: SimulationModel) -> DataModel:
+
+    if sim.start_values is None:
+        sim.start_values = {}
+    
+    fmu_path = FMU_DIR / f"{sim.fmu_name}.fmu"
+    if not fmu_path.is_file():
+        raise FileNotFoundError(f"FMU not found: {fmu_path}")
+
+    # Convert DataModel input to numpy array if provided and not empty
+    input_array = None
+    if sim.input is not None and hasattr(sim.input, 'timestamps') and sim.input.timestamps:
+        input_array = data_model_to_ndarray(sim.input)
+
+    results = simulate_fmu(
+        filename=str(fmu_path),
+        start_time=sim.start_time,
+        stop_time=sim.stop_time,
+        step_size=sim.step_size,
+        start_values=sim.start_values,
+        input=input_array,
+        output=sim.output,
+        output_interval=sim.output_interval,
+        apply_default_start_values=True,
+        record_events=True
+    )
+
+    return ndarray_to_data_model(results)
+
+CREATE_SIGNAL_DESCRIPTION =  """Creates a single signal.
     Args:
     signal_name (str): Name of the signal
     timestamps (List(float)): List of timestamps
@@ -106,34 +154,25 @@ def create_signal_tool(
     Returns:
     DataModel
     """
+@mcp.tool(name="create_signal", description=CREATE_SIGNAL_DESCRIPTION)
+def create_signal_tool(
+    signal_name: str,
+    timestamps: List[float],
+    values: List[float]
+) -> DataModel:
     return create_signal(signal_name,timestamps,values)
 
-@mcp.tool()
-def merge_signals_tool(signals: List[DataModel]) -> DataModel:
-    """Merges multiple signals into single DataModel.
+MERGE_SIGNALS_DESCRIPTION = """Merges multiple signals into single DataModel.
     Args:
     signals List[DataModel]: List of signals
 
     Returns:
     DataModel
     """
+@mcp.tool(name="merge_signals", description=MERGE_SIGNALS_DESCRIPTION)
+def merge_signals_tool(signals: List[DataModel]) -> DataModel:
+
     return merge_signals(signals)
-
-@mcp.tool()
-def show_results_in_browser_tool(
-    inputs: DataModel,
-    outputs: DataModel
-):
-    """Visualizes the results in browser.
-    Args:
-    inputs (DataModel): input signals used in the simulation
-    outputs (DataModel): outputs from a simulation
-
-    Returns:
-    HttpURL to the visualizations in the browser
-    """
-    return plot_in_browser(inputs, outputs)
-
 
 def main():
     mcp.run()

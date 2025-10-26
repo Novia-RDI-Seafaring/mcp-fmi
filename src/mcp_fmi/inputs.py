@@ -1,6 +1,6 @@
 from fmpy import simulate_fmu, read_model_description
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 from mcp_fmi.schema import DataModel
 import numpy as np
 
@@ -22,16 +22,19 @@ def ndarray_to_data_model(data: np.ndarray) -> DataModel:
     }
     return DataModel(timestamps=timestamps, signals=signals)
 
-def data_model_to_ndarray(input_model: DataModel) -> np.ndarray:
+def data_model_to_ndarray(input_model: Optional[DataModel]) -> Optional[np.ndarray]:
     """
     Convert a DataModel of inputs into a structured numpy array for FMPy.
 
-    Asgs:
-        input_model: DataModel containing 'timestamps' and 'signals'.
+    Args:
+        input_model: DataModel containing 'timestamps' and 'signals', or None.
 
     Returns:
-        Structured numpy array with dtype [('time', 'f8'), ...] and one row per timestamp.
+        Structured numpy array with dtype [('time', 'f8'), ...] and one row per timestamp, or None.
     """
+    if input_model is None:
+        return None
+        
     # Extract timestamps and variable names
     timestamps = input_model.timestamps
     input_vars = list(input_model.signals.keys())

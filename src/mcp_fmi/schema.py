@@ -1,9 +1,9 @@
-from typing import List, Dict
-from pydantic import BaseModel, HttpUrl
+from typing import List, Dict, Optional, Union, Any
+from pydantic import BaseModel, HttpUrl, Field
 
 class DataModel(BaseModel):
-    timestamps: List[float]
-    signals:    Dict[str, List[float]] 
+    timestamps: List[float] = Field(default_factory=list)
+    signals:    Dict[str, List[float]] = Field(default_factory=dict)
 
 class FMUPaths(BaseModel):
     fmu_paths: List[str]
@@ -41,3 +41,40 @@ class FMUCollection(BaseModel):
 class PlotHttpURL(BaseModel):
     description: str
     url: HttpUrl
+
+class SimulationModel(BaseModel):
+    fmu_name: str = Field(
+        description="Name of the FMU model to simulate"
+    )
+    start_time: Optional[Union[float, str]] = Field(
+        default=0.0,
+        description="Simulation start time"
+    )
+    stop_time: Optional[Union[float, str]] = Field(
+        default=1.0,
+        description="Simulation stop time"
+    )
+    step_size: Optional[Union[float, str]] = Field(
+        default=None,
+        description="Simulation step size"
+    )
+    input: Optional[DataModel] = Field(
+        default=None,
+        description="DataModel containing input signals"
+    )
+    output: Optional[List[str]] = Field(
+        default=None,
+        description="Sequence of output variable names to record"
+    )
+    output_interval: Union[float, str] = Field(
+        default=None,
+        description="Interval for sampling the output"
+    )
+    start_values: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description=(
+            "Dictionary of initial parameter and input values. "
+            "Use this function to change the values of parameters and "
+            "inputs from their default values."
+        )
+    )
