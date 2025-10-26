@@ -1,20 +1,20 @@
 # server.py
 import os
+from pickle import NONE
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
-from typing import List
+from typing import List, Optional, Dict, Union, Any, Literal, Sequence
 from pydantic import Field
 from pathlib import Path
 import argparse
 from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel, Field
 
-from mcp_fmi.inputs import create_signal, merge_signals
-from mcp_fmi.simulation import simulate, simulate_with_input
+from mcp_fmi.inputs import create_signal, merge_signals, data_model_to_ndarray, ndarray_to_data_model
 from mcp_fmi.schema import FMUCollection, DataModel, FMUInfo
 from mcp_fmi.information import _get_model_description, _get_all_model_descriptions, _get_fmu_names
-
-from dash import dcc, html
+from fmpy import simulate_fmu
 
 load_dotenv()
 
@@ -90,33 +90,150 @@ def get_fmu_names() -> List[str]:
     return _get_fmu_names(FMU_DIR)
 
 ### Tool for simulation ###
-@mcp.tool()
-def simulate_tool(
-    fmu_name: str = "BouncingBall",
-    start_time: float = 0.0,
-    stop_time: float = 1.0,
-    output_interval: float = 0.1,
-    tolerance: float = 1E-4
-    ) -> DataModel:
-    """This tool simulates an FMU model.
-    
-    Args:
-    fmu_name (str): The name of the FMU model to be simulated. 
-    """
-    return simulate(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance)
+class Variable(BaseModel):
+    name: str = Field(..., description="Name of the variable")
+    value: float = Field(..., description="Value of the variable")
+
+class Initialization(BaseModel):
+    parameters: Optional[List[Variable]] = Field(
+        default=None,
+        description="List of parameter values to set"
+        )
+    initial_inputs: Optional[List[Variable]] = Field(
+        default=None,
+        description="List of inputs values to set"
+        )
+
+class SolverOptions(BaseModel):
+    solver: Optional[Literal["Euler", "CVode"]] = Field(
+        default="CVode",
+        description="Solver to use for model exchange ('Euler' or 'CVode')"
+    )
+    step_size: Optional[float] = Field(
+        default=None,
+        description="Step size for the 'Euler' solver"
+    )
+    relative_tolerance: Optional[float] = Field(
+        default=None,
+        description="Relative tolerance for the solver"
+    )
+class ResultsOptions(BaseModel):
+    outputs: Sequence[str] = Field(
+        default=None,
+        description="List of variables to record (empty list: record all outputs)"
+        )
+    output_interval: Union[float, str] = Field(
+        default=None,
+        description="Sampling time for sampling the outputs (0.0 means auto)"
+        )    
+
+class SimulationOptions(BaseModel):
+    solver_options: Optional[SolverOptions] = Field(default=None, description="Solver options")
+    results_options: Optional[ResultsOptions] = Field(default=None, description="Results options")
+
+class Experiment(BaseModel):
+    fmu_name: str = Field(default="BouncingBall", description="The name of the FMU model to simulate")
+    input: Optional[DataModel] = Field(
+        default={},
+        description="A DataModel containing input signals with timestamps. Omit for models without inputs."
+        )
+    start_time: Optional[Union[float, str]] = Field(
+        default=0.0,
+        description="Simulation start time"
+        )
+    stop_time: Optional[Union[float, str]] = Field(
+        default=1.0,
+        description="Simulation stop time"
+        )
+    initialization: Optional[Initialization] = Field(
+        default=Initialization(),
+        description="Model initialization options"
+        )
+    options: Optional[SimulationOptions] = Field(
+        default=SimulationOptions(),
+        description="Simulation options"
+        )
+
+
 
 @mcp.tool()
-def simulate_with_input_tool(
-    inputs: DataModel,
-    fmu_name: str = "LOC",
-    start_time: float = 0.0,
-    stop_time: float = 300.0,
-    output_interval: float = 5,
-    tolerance: float = 1E-4,
-    ) -> DataModel:
-    """This tool simulates an FMU model with inputs.
+def simulate(
+    experiment: Experiment = Experiment()
+) -> DataModel:
+    """Simulate an FMU model with the specified parameters.
+    
+    This tool simulates an FMU (Functional Mock-up Unit) model using the FMPy library.
+    It supports both Model Exchange and Co-Simulation FMUs with various solver options.
+    
+    Args:
+        experiment: Experiment configuration including FMU name, inputs, time range, and initialization
+        options: Optional simulation and solver options
+        
+    Returns:
+        DataModel: Simulation results containing all signals
     """
-    return simulate_with_input(FMU_DIR, fmu_name, start_time, stop_time, output_interval, tolerance, inputs)
+    # Build FMU path
+    fmu_path = FMU_DIR / f"{experiment.fmu_name}.fmu"
+    if not fmu_path.is_file():
+        raise FileNotFoundError(f"FMU not found: {fmu_path}")
+
+    # Convert DataModel input to numpy array if provided and not empty
+    input_array = None
+    if experiment.input and experiment.input.timestamps:
+        input_array = data_model_to_ndarray(experiment.input)
+
+    # Prepare start_values dictionary from initialization
+    start_values = {}
+    if experiment.initialization:
+        # Add parameters
+        if experiment.initialization.parameters:
+            for param in experiment.initialization.parameters:
+                start_values[param.name] = param.value
+        # Add initial inputs
+        if experiment.initialization.initial_inputs:
+            for inp in experiment.initialization.initial_inputs:
+                start_values[inp.name] = inp.value
+
+    # Extract solver options with defaults
+    solver = 'CVode'
+    step_size = None
+    relative_tolerance = None
+    if experiment.options and experiment.options.solver_options:
+        solver = experiment.options.solver_options.solver
+        step_size = experiment.options.solver_options.step_size
+        relative_tolerance = experiment.options.solver_options.relative_tolerance
+
+    # Extract results options
+    output_param = None
+    output_interval = None
+    if experiment.options and experiment.options.results_options:
+        output_param = experiment.options.results_options.outputs
+        output_interval = experiment.options.results_options.output_interval
+
+    # Call FMPy's simulate_fmu
+    results = simulate_fmu(
+        filename=str(fmu_path),
+        start_time=experiment.start_time,
+        stop_time=experiment.stop_time,
+        solver=solver,
+        step_size=step_size,
+        relative_tolerance=relative_tolerance,
+        output_interval=output_interval,
+        record_events=True,
+        start_values=start_values if start_values else {},
+        apply_default_start_values=(not start_values),
+        input=input_array,
+        output=output_param,
+        timeout=None,
+        logger=None,
+        fmi_call_logger=None,
+        step_finished=None,
+        model_description=None,
+        fmu_instance=None
+    )
+
+    # Convert results back to DataModel
+    return ndarray_to_data_model(results)
 
 @mcp.tool()
 def create_signal_tool(

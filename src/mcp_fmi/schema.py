@@ -1,9 +1,9 @@
 from typing import List, Dict
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, Field
 
 class DataModel(BaseModel):
-    timestamps: List[float]
-    signals:    Dict[str, List[float]] 
+    timestamps: List[float] = Field(default=[])
+    signals:    Dict[str, List[float]] = Field(default={})
 
 class FMUPaths(BaseModel):
     fmu_paths: List[str]
